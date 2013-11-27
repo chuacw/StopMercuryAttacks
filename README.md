@@ -1,15 +1,15 @@
 StopMercuryAttacks
 ==================
 
-StopMercuryAttacks is a Delphi XE5 project group consisting of 2 projects
-1) StopSMTPAttacks
-2) StopPOP3Attacks
+StopMercuryAttacks is a Delphi XE5 project group consisting of 2 projects<br />
+1) StopSMTPAttacks<br />
+2) StopPOP3Attacks<br />
 
 that prevents connections to the Mercury SMTP server from the same connection within 5 seconds by blacklisting these connections.
 
-After compilation, update the DAEMON.INI to the following:
+After compilation, update the DAEMON.INI to the following:<br/>
 
-[Daemons]
-POPAttack2  = C:\PathName\StopPOP3Attacks.dll
-SMTPAttack2 = C:\PathName\StopSMTPAttacks.dll
+[Daemons]<br />
+POPAttack2  = C:\PathName\StopPOP3Attacks.dll<br />
+SMTPAttack2 = C:\PathName\StopSMTPAttacks.dll<br />
 
