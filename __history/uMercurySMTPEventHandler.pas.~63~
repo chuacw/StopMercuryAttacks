@@ -1,0 +1,50 @@
+unit uMercurySMTPEventHandler;
+
+interface
+uses MPEvent, MSEvent, daemon;
+
+type
+//  TMercuryProcessor = class
+//  protected
+//    class var m: M_INTERFACE;
+//  public
+//    destructor Destroy; override;
+//  end;
+
+function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl; export;
+
+implementation
+
+var
+  mi: M_INTERFACE;
+  ModuleName: string;
+
+function SMTPEventHandler(module: UINT_32; event: UINT_32;
+  edata: Pointer; cdata: Pointer): INT_32; cdecl;
+var
+  pms: PMseventbuf;
+  IPAddress: string;
+begin
+  pms := PMseventbuf(edata);
+  IPAddress := pms.client;
+  mi.logdata(19400, LOG_NORMAL, 'DAEMON4: connection from %s', IPAddress);
+  Result := 1; // Non-zero to indicate success!
+end;
+
+function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl; export;
+var
+  Text: string;
+begin
+  ModuleName := name;
+  if m.register_event_handler(MMI_MERCURYS, MSEVT_CONNECT, SMTPEventHandler, nil)=0 then
+    Text := 'Failed to register event handler' else
+    Text := 'Successfully registered event handler';
+  m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));
+  mi := m^;
+  Result := 1; // Non-zero to indicate success!
+end;
+
+end.
+

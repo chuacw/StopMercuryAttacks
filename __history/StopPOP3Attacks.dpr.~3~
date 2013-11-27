@@ -1,0 +1,11 @@
+library StopPOP3Attacks;
+
+{$R *.res}
+
+uses
+  daemon in 'daemon.pas',
+  MPEvent in 'MPEvent.pas',
+  MSEvent in 'MSEvent.pas';
+
+begin
+end.

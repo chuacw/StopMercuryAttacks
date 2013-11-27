@@ -1,0 +1,7 @@
+unit SMTPEventHandler;
+
+interface
+
+implementation
+
+end.

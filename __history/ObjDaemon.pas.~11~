@@ -1,0 +1,84 @@
+unit ObjDaemon;
+
+interface
+uses MPEvent, MSEvent, daemon, Classes;
+type
+  TProcessor = class
+  end;
+
+procedure RegisterProcessor(const AProcessor: TProcessor);
+procedure RegisterProcessors(const AProcessors: array of TProcessor);
+
+function startup(var m: M_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl; export;
+
+implementation
+
+type
+  TMercuryRegGroups = class
+  private
+    FGroups: TList;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure RegisterProcessor(const AProcessor: TProcessor);
+    procedure RegisterProcessors(const AProcessors: array of TProcessor);
+  end;
+
+var
+  MercuryRegGroups: TMercuryRegGroups;
+
+procedure RegisterProcessor(const AProcessor: TProcessor); // Class to register
+begin
+  MercuryRegGroups.RegisterProcessor(AProcessor);
+end;
+
+procedure RegisterProcessors(const AProcessors: array of TProcessor);
+begin
+  MercuryRegGroups.RegisterProcessors(AProcessors);
+end;
+
+function startup(var m: M_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl; export;
+begin
+  Result := 1; // Non-zero to indicate success!
+  try
+
+  except
+    Result := 0;
+  end;
+end;
+
+{ TMercuryRegGroups }
+
+constructor TMercuryRegGroups.Create;
+begin
+  inherited Create;
+  FGroups := TList.Create;
+end;
+
+destructor TMercuryRegGroups.Destroy;
+begin
+  FGroups.Free;
+  inherited;
+end;
+
+procedure TMercuryRegGroups.RegisterProcessor(const AProcessor: TProcessor);
+begin
+  FGroups.Add(AProcessor);
+end;
+
+procedure TMercuryRegGroups.RegisterProcessors(
+  const AProcessors: array of TProcessor);
+var
+  LProcessor: TProcessor;  
+begin
+  for LProcessor in AProcessors do
+    RegisterProcessor(LProcessor);
+end;
+
+initialization
+  MercuryRegGroups := TMercuryRegGroups.Create;
+finalization
+  MercuryRegGroups.Free;
+end.

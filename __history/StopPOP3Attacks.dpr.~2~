@@ -1,0 +1,6 @@
+library StopPOP3Attacks;
+
+{$R *.res}
+
+begin
+end.

@@ -1,0 +1,69 @@
+unit uMercurySMTPEventHandler;
+
+interface
+uses MPEvent, MSEvent, daemon;
+
+//type
+//  TMercuryProcessor = class
+//  protected
+//    class var m: M_INTERFACE;
+//  public
+//    destructor Destroy; override;
+//  end;
+
+function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl; export;
+
+{$IF DEFINED(CLOSEDOWN)}
+function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl; export;
+{$ENDIF}
+
+implementation
+
+var
+  mi: M_INTERFACE;
+  ModuleName: string;
+
+function SMTPEventHandler(module: UINT_32; event: UINT_32;
+  edata: Pointer; cdata: Pointer): INT_32; cdecl;
+var
+  pms: PMseventbuf;
+  IPAddress, Text: AnsiString;
+begin
+  pms := PMseventbuf(edata);
+  IPAddress := AnsiString(pms.client);
+
+  LDateTime := FormatDateTime('d mmm h:nn:ss am/pm', Now);
+  Text := Format('%s - POP3 Event Handler called.', [LDateTime]);
+
+  mi.logdata(19400, LOG_NORMAL, '%s: connection from %s',
+    PAnsiChar(PWideChar(ModuleName)), PAnsiChar(IPAddress));
+
+  Result := 1; // Non-zero to indicate success!
+end;
+
+function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint;
+var
+  Text: AnsiString;
+begin
+  ModuleName := string(name);
+  if m.register_event_handler(MMI_MERCURYS, MSEVT_CONNECT, @SMTPEventHandler, nil)=0 then
+    Text := 'Failed to register event handler' else
+    Text := 'Successfully registered event handler';
+  m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));
+  mi := m^;
+  Result := 1; // Non-zero to indicate success!
+end;
+
+{$IF DEFINED(CLOSEDOWN)}
+function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint;
+begin
+
+end;
+{$ENDIF}
+
+end.
+

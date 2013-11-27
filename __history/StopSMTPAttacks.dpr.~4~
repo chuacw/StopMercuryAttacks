@@ -1,0 +1,11 @@
+library StopSMTPAttacks;
+
+{$R *.res}
+
+uses
+  MSEvent in 'MSEvent.pas',
+  MPEvent in 'MPEvent.pas',
+  daemon in 'daemon.pas';
+
+begin
+end.

@@ -1,0 +1,6 @@
+library StopSMTPAttacks;
+
+{$R *.res}
+
+begin
+end.
