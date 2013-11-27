@@ -1,4 +1,8 @@
 unit MSEvent;
+{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{.$STRONGLINKTYPES OFF}
+{$WEAKLINKRTTI ON}
+
 (*
 
    MSEVENT.H - Structure and mnemonic identifier declarations for MercuryS events.

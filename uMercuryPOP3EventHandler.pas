@@ -1,4 +1,7 @@
 unit uMercuryPOP3EventHandler;
+{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{.$STRONGLINKTYPES OFF}
+{$WEAKLINKRTTI ON}
 
 interface
 uses MPEvent, MSEvent, daemon;

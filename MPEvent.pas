@@ -1,4 +1,8 @@
 unit MPEvent;
+{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{.$STRONGLINKTYPES OFF}
+{$WEAKLINKRTTI ON}
+
 (*
 
    MPEVENT.H - Structure and mnemonic identifier declarations for MercuryP events.

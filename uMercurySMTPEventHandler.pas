@@ -1,4 +1,7 @@
 unit uMercurySMTPEventHandler;
+{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{.$STRONGLINKTYPES OFF}
+{$WEAKLINKRTTI ON}
 
 interface
 uses MPEvent, MSEvent, daemon;
@@ -96,7 +99,7 @@ end;
 function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
   param: PAnsiChar): Smallint;
 begin
-
+  FreeAndNil(LastConnectionTime);
 end;
 {$ENDIF}
 

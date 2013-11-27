@@ -1,4 +1,8 @@
 unit Daemon;
+{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{.$STRONGLINKTYPES OFF}
+{$WEAKLINKRTTI ON}
+
 (*
 
    DAEMON.H - Header for for creating Mercury/32 Daemons

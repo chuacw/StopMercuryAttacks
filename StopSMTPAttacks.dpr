@@ -1,6 +1,9 @@
 library StopSMTPAttacks;
 
 {.$R *.res}
+{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([vcPublic])}
+{.$STRONGLINKTYPES OFF}
+{$WEAKLINKRTTI ON}
 
 uses
   MSEvent in 'MSEvent.pas',
