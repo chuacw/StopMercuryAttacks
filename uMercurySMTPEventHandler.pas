@@ -57,7 +57,7 @@ begin
           LastConnectedOn := LastConnectionTime[IPAddress];
           // LDateTime := AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn));
           ShowLastConnectedTime(AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn)));
-          if WithinPastSeconds(Now, LastConnectedOn, 5) then
+          if WithinPastSeconds(Now, LastConnectedOn, 70) then
             begin
               Log(AnsiString(Format('Connection %s blacklisted.', [IPAddress])));
               pms.outbuf[0] := #0;
@@ -106,6 +106,6 @@ end;
 initialization
   LastConnectionTime := nil;
 finalization
-  FreeAndNil(LastConnectionTime);
+  LastConnectionTime.Free;
 end.
 
