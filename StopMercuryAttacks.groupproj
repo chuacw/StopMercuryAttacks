@@ -9,6 +9,9 @@
         <Projects Include="StopPOP3Attacks.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="TestSMTPMultipleAuth.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -37,14 +40,23 @@
     <Target Name="StopPOP3Attacks:Make">
         <MSBuild Projects="StopPOP3Attacks.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TestSMTPMultipleAuth">
+        <MSBuild Projects="TestSMTPMultipleAuth.dproj"/>
+    </Target>
+    <Target Name="TestSMTPMultipleAuth:Clean">
+        <MSBuild Projects="TestSMTPMultipleAuth.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestSMTPMultipleAuth:Make">
+        <MSBuild Projects="TestSMTPMultipleAuth.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="StopSMTPAttacks;StopPOP3Attacks"/>
+        <CallTarget Targets="StopSMTPAttacks;StopPOP3Attacks;TestSMTPMultipleAuth"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="StopSMTPAttacks:Clean;StopPOP3Attacks:Clean"/>
+        <CallTarget Targets="StopSMTPAttacks:Clean;StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="StopSMTPAttacks:Make;StopPOP3Attacks:Make"/>
+        <CallTarget Targets="StopSMTPAttacks:Make;StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
