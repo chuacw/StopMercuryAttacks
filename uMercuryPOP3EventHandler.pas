@@ -17,6 +17,9 @@ function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
 implementation
 uses System.SysUtils, System.Generics.Collections, System.DateUtils;
 
+const
+  MinConnectTime = 70;
+
 var
   ModuleName: AnsiString;
   mi: M_INTERFACE;
@@ -54,7 +57,7 @@ begin
         LastConnectedOn := LastConnectionTime[IPAddress];
         // LDateTime := AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn));
         ShowLastConnectedTime(AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn)));
-        if WithinPastSeconds(Now, LastConnectedOn, 5) then
+        if WithinPastSeconds(Now, LastConnectedOn, MinConnectTime) then
           begin
             Log(AnsiString(Format('%s: Connection %s blacklisted.', [ModuleName, IPAddress])));
             Result := -3; // Blacklist!!!
@@ -83,7 +86,7 @@ begin
   if m.register_event_handler(MMI_MERCURYP, MSEVT_CONNECT, @POP3EventHandler, nil)=0 then
     Text := 'Failed to register event handler' else
     begin
-      Text := 'StopPOP3Attack registered successfully';
+      Text := Format('StopPOP3Attack registered successfully, Min: %d', [MinConnectTime]);
       LastConnectionTime := TDictionary<AnsiString, TDateTime>.Create;
     end;
   m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(AnsiString(Text)));
