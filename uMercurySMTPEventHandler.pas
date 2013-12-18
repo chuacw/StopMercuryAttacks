@@ -4,7 +4,7 @@ unit uMercurySMTPEventHandler;
 {$WEAKLINKRTTI ON}
 
 interface
-uses MPEvent, MSEvent, daemon;
+uses MSEvent, daemon;
 
 function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
   param: PAnsiChar): Smallint; cdecl; export;
@@ -159,7 +159,9 @@ function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
 var
   Text: AnsiString;
 begin
+  mi := m^;
   ModuleName := AnsiString(name);
+
   if m.register_event_handler(MMI_MERCURYS, MSEVT_CONNECT, @SMTPEventHandler, nil)=0 then
     Text := 'Failed to register SMTP event handler' else
     begin
@@ -181,7 +183,6 @@ begin
     end;
   m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));
 
-  mi := m^;
   Result := 1; // Non-zero to indicate success!
 end;
 
