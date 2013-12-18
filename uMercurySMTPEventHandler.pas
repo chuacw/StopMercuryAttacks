@@ -189,7 +189,7 @@ end;
 function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
   param: PAnsiChar): Smallint;
 begin
-  FreeAndNil(LastCommand);
+  FreeAndNil(LastAuthTime);
   FreeAndNil(LastConnectionTime);
 end;
 {$ENDIF}
