@@ -138,7 +138,7 @@ begin
   IPAddress := pms.client;
   if LastUserPassCount.ContainsKey(IPAddress) then
     begin
-      Log(AnsiString(Format('Reset USER/PASS count for %s', [IPAddress])));
+      Log(AnsiString(Format('%s: Reset USER/PASS count for %s', [ModuleName, IPAddress])));
       LastUserPassCount.Remove(IPAddress);
     end;
 end;

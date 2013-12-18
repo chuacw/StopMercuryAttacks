@@ -160,12 +160,12 @@ var
   Text: AnsiString;
 begin
   mi := m^;
-  ModuleName := AnsiString(name);
+  ModuleName := name;
 
   if m.register_event_handler(MMI_MERCURYS, MSEVT_CONNECT, @SMTPEventHandler, nil)=0 then
     Text := 'Failed to register SMTP event handler' else
     begin
-      Text := AnsiString(Format('StopSMTPAttack registered successfully, Min: %d', [MinConnectTime]));
+      Text := AnsiString(Format('%s registered successfully, Min: %d', [ModuleName, MinConnectTime]));
       LastConnectionTime := TDictionary<TIPAddress, TDateTime>.Create;
     end;
   m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));

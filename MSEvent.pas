@@ -1,6 +1,5 @@
 unit MSEvent;
-{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
-{.$STRONGLINKTYPES OFF}
+{$WARNINGS OFF}
 {$WEAKLINKRTTI ON}
 
 (*
@@ -100,7 +99,7 @@ const
   {$EXTERNALSYM MSEVT_AUTH}
   MSEVT_AUTH                          = 10; 
   {$EXTERNALSYM MSEVT_COMMAND}
-  MSEVT_COMMAND                       = 14; 
+  MSEVT_COMMAND                       = 14;
   {$EXTERNALSYM MSEVT_RSET}
   MSEVT_RSET                          = 17; 
   {$EXTERNALSYM MSEVT_MAIL}
@@ -120,7 +119,7 @@ const
   {$EXTERNALSYM MSEVT_CLOSE}
   MSEVT_CLOSE                         = 15; 
   {$EXTERNALSYM MSEVT_ABORT}
-  MSEVT_ABORT                         = 16; 
+  MSEVT_ABORT                         = 16;
 
 //  MSEF_* constants are used to isolate status bits in the "flags" field
 //  of MSEVENTBUF structures (see below)
@@ -240,7 +239,7 @@ type
     consoletext: CONSOLETEXT;
     loggingtext: LOGGINGTEXT;
   end; 
-  TEbfns = EBFNS; 
+  TEbfns = EBFNS;
 
 ////typedef struct
 ////   {
