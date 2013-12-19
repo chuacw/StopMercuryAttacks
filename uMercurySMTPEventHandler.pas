@@ -20,25 +20,30 @@ uses System.SysUtils, System.Generics.Collections, System.DateUtils;
 const
   MinConnectTime = 70;
   MinTimeBetweenAuth = 5;
+
 type
   TIPAddress = AnsiString;
   TCommand = AnsiString;
-var
-  mi: M_INTERFACE;
-  ModuleName: AnsiString;
-  LastAuthTime: TDictionary<TIPAddress, TDateTime>;
-  LastConnectionTime: TDictionary<TIPAddress, TDateTime>;
 
-procedure Log(const Text: AnsiString);
+var
+  ModuleName: AnsiString = '';
+  mi: M_INTERFACE;
+  LastAuthTime: TDictionary<TIPAddress, TDateTime> = nil;
+  LastConnectionTime: TDictionary<TIPAddress, TDateTime> = nil;
+
+procedure Log(const LogMsg: AnsiString);
+var
+  LText: AnsiString;
 begin
-  mi.logstring(19400, LOG_NORMAL, PAnsiChar(Text));
+  LText := AnsiString(Format('%s: %s', [ModuleName, LogMsg]));
+  mi.logstring(19400, LOG_NORMAL, PAnsiChar(LText));
 end;
 
 procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString);
 var
   Text: AnsiString;
 begin
-  Text := AnsiString(Format('%s: %s last connection: %s.', [ModuleName, IPAddress, LDateTime]));
+  Text := AnsiString(Format('%s last connection: %s.', [IPAddress, LDateTime]));
   Log(Text);
 end;
 
@@ -54,8 +59,7 @@ begin
     pms := PMSEventBuf(edata);
     IPAddress := AnsiString(pms.client);
 
-    mi.logdata(19400, LOG_NORMAL, '%s: connection from %s',
-      PAnsiChar(ModuleName), PAnsiChar(IPAddress));
+    Log(AnsiString(Format('connection from %s', [IPAddress])));
 
       if LastConnectionTime.ContainsKey(IPAddress) then
         begin
@@ -159,21 +163,21 @@ function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
 var
   Text: AnsiString;
 begin
-  mi := m^;
+  mi := m^; // Copy the structure, not the pointer, as the data at the pointer will be released
   ModuleName := name;
 
   if m.register_event_handler(MMI_MERCURYS, MSEVT_CONNECT, @SMTPEventHandler, nil)=0 then
     Text := 'Failed to register SMTP event handler' else
     begin
-      Text := AnsiString(Format('%s registered successfully, Min: %d', [ModuleName, MinConnectTime]));
+      Text := AnsiString(Format('registered successfully, Min: %d', [MinConnectTime]));
       LastConnectionTime := TDictionary<TIPAddress, TDateTime>.Create;
     end;
-  m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));
+  Log(Text);
 
   if m.register_event_handler(MMI_MERCURYS, MSEVT_HELO, @SMTPHeloHandler, nil)=0 then
     Text := 'Failed to register HELO event handler' else
     Text := AnsiString('SMTPHelo registered successfully');
-  m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));
+  Log(Text);
 
   if m.register_event_handler(MMI_MERCURYS, MSEVT_AUTH, @SMTPAuthHandler, nil)=0 then
     Text := 'Failed to register AUTH event handler' else
@@ -181,7 +185,7 @@ begin
       Text := AnsiString('SMTPAuth registered successfully');
       LastAuthTime := TDictionary<TIPAddress, TDateTime>.Create;
     end;
-  m.logstring(19400, LOG_SIGNIFICANT, PAnsiChar(Text));
+  Log(Text);
 
   Result := 1; // Non-zero to indicate success!
 end;
@@ -196,8 +200,6 @@ end;
 {$ENDIF}
 
 initialization
-  LastConnectionTime := nil;
-  LastAuthTime := nil;
 finalization
   LastAuthTime.Free;
   LastConnectionTime.Free;
