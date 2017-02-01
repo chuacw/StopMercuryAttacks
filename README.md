@@ -1,7 +1,10 @@
 StopMercuryAttacks
 ==================
 
-StopMercuryAttacks is a Delphi XE5 project group consisting of 2 projects<br/>
+<a href="http://www.pmail.com/overviews/ovw_mercwin.htm">Mercury SMTP</a> is an email server written in C/C++ by David Harris.
+
+
+StopMercuryAttacks is a Delphi XE5 project group consisting of 2 plugin projects<br/>
 1) StopSMTPAttacks<br />
 2) StopPOP3Attacks<br />
 
