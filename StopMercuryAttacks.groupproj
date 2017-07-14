@@ -12,14 +12,15 @@
         <Projects Include="TestSMTPMultipleAuth.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="MercuryApp.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
         <Borland.ProjectType/>
         <BorlandProject>
-            <BorlandProject>
-                <Default.Personality/>
-            </BorlandProject>
+            <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
     <Target Name="StopSMTPAttacks">
@@ -49,14 +50,23 @@
     <Target Name="TestSMTPMultipleAuth:Make">
         <MSBuild Projects="TestSMTPMultipleAuth.dproj" Targets="Make"/>
     </Target>
+    <Target Name="MercuryApp">
+        <MSBuild Projects="MercuryApp.dproj"/>
+    </Target>
+    <Target Name="MercuryApp:Clean">
+        <MSBuild Projects="MercuryApp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MercuryApp:Make">
+        <MSBuild Projects="MercuryApp.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="StopSMTPAttacks;StopPOP3Attacks;TestSMTPMultipleAuth"/>
+        <CallTarget Targets="StopSMTPAttacks;StopPOP3Attacks;TestSMTPMultipleAuth;MercuryApp"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="StopSMTPAttacks:Clean;StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean"/>
+        <CallTarget Targets="StopSMTPAttacks:Clean;StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean;MercuryApp:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="StopSMTPAttacks:Make;StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make"/>
+        <CallTarget Targets="StopSMTPAttacks:Make;StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make;MercuryApp:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -1,5 +1,8 @@
-unit Daemon;
-{$WARNINGS OFF}
+unit Mercury.Daemon;
+{$MESSAGE WARN 'Most/All int is translated as INT_16. This might not be correct, and if so, should be translated to INT_32'}
+{$MESSAGE WARN 'Returns of int can be translated to INT_32, since that return is into CPU registers.'}
+// chuacw
+{.$WARNINGS OFF}
 {$WEAKLINKRTTI ON}
 
 (*
@@ -14,7 +17,7 @@ unit Daemon;
 
 *)
 interface
-uses Windows, Messages;
+uses Winapi.Windows, Winapi.Messages;
 //#ifndef _DAEMON_H_
 //#define _DAEMON_H_
 
@@ -40,6 +43,9 @@ uses Windows, Messages;
 //extern "C"
 //   {
 //#endif
+
+type
+  UntestedAttribute = class(TCustomAttribute) end;
 
 const
 (****************************************************************************
@@ -215,16 +221,16 @@ type
   end;
   TXsize = XSIZE;
 
-////typedef struct
-////   {
-////   char auto_forward [60];
-////   char gw_auto_forward [60];
-////   char from_alias [60];      //* 31 May '92: Alternative From: field value */
-////   unsigned flags;
-////   char security;
-////   } PMPROP;
+// typedef struct
+//    {
+//    char auto_forward [60];
+//    char gw_auto_forward [60];
+//    char from_alias [60];      //* 31 May '92: Alternative From: field value */
+//    unsigned flags;
+//    char security;
+//    } PMPROP;
 
-  PPmprop = ^TPmprop;
+  PPMprop = ^TPMProp;
   {$EXTERNALSYM PMPROP}
   PMPROP = packed record
     auto_forward: array[0..59] of AnsiChar;
@@ -233,7 +239,7 @@ type
     flags: Cardinal;
     security: AnsiChar;
   end;
-  TPmprop = PMPROP;
+  TPMProp = PMPROP;
 
 const
 
@@ -252,31 +258,31 @@ const
 
 type
 
-////typedef struct
-////   {
-////   UINT_32 flags;
-////   UINT_32 type;
-////   char description [50];
-////   char cmdline [128];
-////   char sentinel [128];
-////   char resultfile [128];
-////   UINT_32 action;
-////   char param [128];
-////   } XSCANDEF;
+// typedef struct
+//    {
+//    UINT_32 flags;
+//    UINT_32 type;
+//    char description [50];
+//    char cmdline [128];
+//    char sentinel [128];
+//    char resultfile [128];
+//    UINT_32 action;
+//    char param [128];
+//    } XSCANDEF;
 
-  PXscandef = ^TXscandef; 
-  {$EXTERNALSYM XSCANDEF} 
-  XSCANDEF = packed record 
+  PXScandef = ^TXScandef;
+  {$EXTERNALSYM XSCANDEF}
+  XSCANDEF = packed record
     flags: UINT_32;
     &type: UINT_32;
-    description: array[0..49] of AnsiChar; 
-    cmdline: array[0..127] of AnsiChar; 
-    sentinel: array[0..127] of AnsiChar; 
-    resultfile: array[0..127] of AnsiChar; 
-    action: UINT_32; 
-    param: array[0..127] of AnsiChar; 
+    description: array[0..49] of AnsiChar;
+    cmdline: array[0..127] of AnsiChar;
+    sentinel: array[0..127] of AnsiChar;
+    resultfile: array[0..127] of AnsiChar;
+    action: UINT_32;
+    param: array[0..127] of AnsiChar;
   end;
-  TXscandef = XSCANDEF;
+  TXScandef = XSCANDEF;
 
 
 (****************************************************************************
@@ -606,6 +612,7 @@ const
 type
   PFolder = ^TFolder;
   {$EXTERNALSYM FOLDER}
+  [Untested]
   FOLDER = packed record
                                                   //  ---- Publicly-accessible fields --------------------
     vname: array[0..MAXVNAME - 1] of AnsiChar;    //  Folder's logical name
@@ -646,8 +653,9 @@ type
 ////   UINT_32 fdata2;             //  Private data for foldering plugin
 ////   } IMESSAGE;                 //  ** Total size: 192 bytes.
 
-  PImessage = ^TImessage;
+  PIMessage = ^TIMessage;
   {$EXTERNALSYM IMESSAGE}
+  [Untested]
   IMESSAGE = packed record
     dsize: INT_16;                         //  The size of this data structure
     mtype: INT_16;                         //  User-defined message type field
@@ -667,7 +675,7 @@ type
     fdata1: UINT_32;                       //  Private data for foldering plugin
     fdata2: UINT_32;                      //  Private data for foldering plugin
   end;
-  TImessage = IMESSAGE;
+  TIMessage = IMESSAGE;
   //  ** Total size: 192 bytes.
 
 //  Explanation of fields:
@@ -824,6 +832,7 @@ type
 
   PAttachment = ^TAttachment;
   {$EXTERNALSYM ATTACHMENT}
+  [Untested]
   ATTACHMENT = packed record
     fname: array[0..255] of AnsiChar;           //(* Definition used internally to represent *)
     original_name: array[0..127] of AnsiChar;   //(* attachments to messages, both incoming and *)
@@ -853,10 +862,11 @@ type
 
   PFmmEntry = ^TFmmEntry; 
   {$EXTERNALSYM FMM_ENTRY} 
+  [Untested]
   FMM_ENTRY = packed record
-    name: PAnsiChar; 
-    ntype: Integer; 
-    unique_id: PAnsiChar; 
+    name: PAnsiChar;
+    ntype: Integer;
+    unique_id: PAnsiChar;
     parent_id: PAnsiChar; 
     folder: PFOLDER; 
   end;
@@ -937,6 +947,7 @@ type
 
   PMpt = ^TMpt;
   {$EXTERNALSYM MPT}
+  [Untested]
   MPT = packed record
     charset: array[0..19] of AnsiChar;
     table: PAnsiChar;
@@ -951,6 +962,7 @@ type
 
   PMpp = ^TMpp;
   {$EXTERNALSYM MPP}
+  [Untested]
   MPP = packed record
     boundary: array[0..70] of AnsiChar;
     partlist: LIST;
@@ -965,6 +977,7 @@ type
 
   PMpa = ^TMpa;
   {$EXTERNALSYM MPA}
+  [Untested]
   MPA = packed record
     fname: array[0..95] of AnsiChar;
     &type: array[0..19] of AnsiChar;
@@ -991,6 +1004,7 @@ type
 
   PImime = ^TImime;
   {$EXTERNALSYM IMIME}
+  [Untested]
   IMIME = packed record
     primary: Integer;
     secondary: Integer;
@@ -1105,6 +1119,7 @@ type
 
   PJobinfo = ^TJobinfo;
   {$EXTERNALSYM JOBINFO}
+  [Untested]
   JOBINFO = packed record
     structlen: Integer;
     jobstatus: AnsiChar;
@@ -1140,6 +1155,7 @@ type
 
   PJqinfo = ^TJqinfo;
   {$EXTERNALSYM JQINFO}
+  [Untested]
   JQINFO = packed record
     ssize: Integer;
     total_gjobs: Longint;
@@ -1290,6 +1306,7 @@ type
 
   PDlist = ^TDlist;
   {$EXTERNALSYM DLIST}
+  [Untested]
   DLIST = packed record
     lname: array[0..47] of AnsiChar;
     fname: array[0..127] of AnsiChar;            // Name of container file for list
@@ -1384,6 +1401,7 @@ type
 
   PSubscriber = ^TSubscriber;
   {$EXTERNALSYM SUBSCRIBER}
+  [Untested]
   SUBSCRIBER = packed record
     ssize: ULONG;                              //  Size of this structure in bytes
     appdata: ULONG;                            //  Available for application use.
@@ -1399,7 +1417,7 @@ type
     submission_date: array[0..7] of UCHAR;     //  Date of last submission to list
     vacation_date: array[0..7] of UCHAR;      //  For status=V, auto-enable date
   end;
-  TSubscriber = SUBSCRIBER; 
+  TSubscriber = SUBSCRIBER;
 
 
 //  The "flags" field of a SUBSCRIBER structure contains information about
@@ -1491,6 +1509,7 @@ type
 
   POifAttrinfo = ^TOifAttrinfo;
   {$EXTERNALSYM OIF_ATTRINFO}
+  [Untested]
   OIF_ATTRINFO = packed record
     aname: array[0..MAX_ANAME_SIZE - 1] of AnsiChar;  //  Attribute name
     atype: UINT_32;                                   //  See OIF_ATYPES above
@@ -1507,15 +1526,15 @@ const
   {$EXTERNALSYM OIERR_NO_ERROR}
   OIERR_NO_ERROR                      = 1;
   {$EXTERNALSYM OIERR_FAILED}
-  OIERR_FAILED                        = - 1; 
+  OIERR_FAILED                        = - 1;
   {$EXTERNALSYM OIERR_MEMORY}
-  OIERR_MEMORY                        = - 2; 
+  OIERR_MEMORY                        = - 2;
   {$EXTERNALSYM OIERR_PARAM}
-  OIERR_PARAM                         = - 3; 
+  OIERR_PARAM                         = - 3;
   {$EXTERNALSYM OIERR_ALREADY_REGISTERED}
-  OIERR_ALREADY_REGISTERED            = - 4; 
+  OIERR_ALREADY_REGISTERED            = - 4;
   {$EXTERNALSYM OIERR_VERSION}
-  OIERR_VERSION                       = - 5; 
+  OIERR_VERSION                       = - 5;
   {$EXTERNALSYM OIERR_TOO_MANY_OBJECTS}
   OIERR_TOO_MANY_OBJECTS              = - 6; 
   {$EXTERNALSYM OIERR_NO_SUCH_OBJECT}
@@ -1585,68 +1604,77 @@ type
   These are the functions that code designed to use the interface will
   call to interact with objects.
 **********************************************************************)
-
-////INT_32 (OIFCALL *OIF_NEW) (const char *name, const char *type, OIF_HANDLE *object, UINT_32 flags);
-
+{$MESSAGE WARN 'These routines could likely be cdecl, and not stdcall!!!'}
+// INT_32 (OIFCALL *OIF_NEW) (const char *name, const char *type, OIF_HANDLE *object, UINT_32 flags);
 {$EXTERNALSYM OIF_NEW}
+  [Untested]
   OIF_NEW = function (name: PAnsiChar; &type: PAnsiChar; var obj: OIF_HANDLE; flags: UINT_32): INT_32; stdcall;
 
-////INT_32 OIF_DISPOSE_HANDLE (OIF_HANDLE object);
-
+// INT_32 OIF_DISPOSE_HANDLE (OIF_HANDLE object);
 {$EXTERNALSYM OIF_DISPOSE_HANDLE}
+  [Untested]
   OIF_DISPOSE_HANDLE = function (obj: OIF_HANDLE): INT_32; stdcall;
 
-////INT_32 OIF_USE_HANDLE (OIF_HANDLE object);
-
+// INT_32 OIF_USE_HANDLE (OIF_HANDLE object);
 {$EXTERNALSYM OIF_USE_HANDLE}
+  [Untested]
   OIF_USE_HANDLE = function (obj: OIF_HANDLE): INT_32; stdcall;
 
-////INT_32 OIF_DUPLICATE_OBJECT (OIF_HANDLE object, OIF_HANDLE *dup_object);
+// INT_32 OIF_DUPLICATE_OBJECT (OIF_HANDLE object, OIF_HANDLE *dup_object);
 
 {$EXTERNALSYM OIF_DUPLICATE_OBJECT}
+  [Untested]
   OIF_DUPLICATE_OBJECT = function (obj: OIF_HANDLE; var dup_object: OIF_HANDLE): INT_32; stdcall;
 
 ////INT_32 OIF_COMPARE (OIF_HANDLE object1, OIF_HANDLE object2, const char *aname, INT_32 *result);
 
 {$EXTERNALSYM OIF_COMPARE}
+  [Untested]
   OIF_COMPARE = function (object1: OIF_HANDLE; object2: OIF_HANDLE; aname: PAnsiChar; var result: INT_32): INT_32; stdcall;
 
 ////INT_32 OIF_COMPARE_STR (OIF_HANDLE object1, OIF_HANDLE object2,
 ////   const char *aname, UINT_32 flags, INT_32 *result);
 
 {$EXTERNALSYM OIF_COMPARE_STR}
+  [Untested]
   OIF_COMPARE_STR = function (object1: OIF_HANDLE; object2: OIF_HANDLE;
   aname: PAnsiChar; flags: UINT_32; var result: INT_32): INT_32; stdcall;
 
 ////INT_32 OIF_HAS_TYPE (OIF_HANDLE object, const char *otype);
 
 {$EXTERNALSYM OIF_HAS_TYPE}
+  [Untested]
   OIF_HAS_TYPE = function (obj: OIF_HANDLE; otype: PAnsiChar): INT_32; stdcall;
 
 ////INT_32 OIF_LOCK (OIF_HANDLE object);
 
 {$EXTERNALSYM OIF_LOCK}
+  [Untested]
   OIF_LOCK = function (obj: OIF_HANDLE): INT_32; stdcall;
 
 ////INT_32 OIF_UNLOCK (OIF_HANDLE object);
 
 {$EXTERNALSYM OIF_UNLOCK}
+  [Untested]
   OIF_UNLOCK = function (obj: OIF_HANDLE): INT_32; stdcall;
 
 
 ////INT_32 OIF_GET_ATTRIBUTE (OIF_HANDLE object, const char *aname, void *buffer, UINT_32 buflen);
 
 {$EXTERNALSYM OIF_GET_ATTRIBUTE}
+  [Untested]
   OIF_GET_ATTRIBUTE = function (obj: OIF_HANDLE; aname: PAnsiChar; buffer: Pointer; buflen: UINT_32): INT_32; stdcall;
 
 ////  INT_32 OIF_GET_ATTRIBUTE_INFO (OIF_HANDLE object, const char *aname, OIF_ATTRINFO *oia);
 
 {$EXTERNALSYM OIF_GET_ATTRIBUTE_INFO}
+  [Untested]
   OIF_GET_ATTRIBUTE_INFO = function (obj: OIF_HANDLE; aname: PAnsiChar; var oia: OIF_ATTRINFO): INT_32; stdcall;
 
 ////INT_32 OIF_SET_ATTRIBUTE (OIF_HANDLE object, const char *aname, void *buffer, UINT_32 buflen);
 
 {$EXTERNALSYM OIF_SET_ATTRIBUTE}
+  [Untested]
   OIF_SET_ATTRIBUTE = function (obj: OIF_HANDLE; aname: PAnsiChar; buffer: Pointer; buflen: UINT_32): INT_32; stdcall;
 
 
@@ -1654,6 +1682,7 @@ type
 ////   const void *inbuf, UINT_32 iblen, void *outbuf, UINT_32 oblen);
 
 {$EXTERNALSYM OIF_DO_METHOD}
+  [Untested]
   OIF_DO_METHOD = function (obj: OIF_HANDLE; mname: PAnsiChar;
   inbuf: Pointer; iblen: UINT_32; outbuf: Pointer; oblen: UINT_32): INT_32; stdcall;
 
@@ -1661,6 +1690,7 @@ type
 ////INT_32 OIF_SCAN_FIRST (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OIF_SCAN_FIRST}
+  [Untested]
   OIF_SCAN_FIRST = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
 
 ////INT_32 OIF_SCAN_LAST (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
@@ -2267,319 +2297,678 @@ type
   TPmodule = PMODULE;
 
 //typedef void (*DEPRECATED_FUNCTION) (void);
-  DEPRECATED_FUNCTION = procedure;
-(*
-typedef UINTP (*GET_VARIABLE) (int index);
-typedef int (*IS_LOCAL_ADDRESS) (char *address, char *uic, char *server);
-typedef int (*GET_DELIVERY_PATH) (char *path, char *username, char *host);
+  {$EXTERNALSYM DEPRECATED_FUNCTION}
+  DEPRECATED_FUNCTION = procedure; cdecl;
 
-typedef int (*IS_GROUP) (char *address, char *host, char *groupname);
-typedef int (*PARSE_ADDRESS) (char *target, char *source, int limit);
-typedef int (*EXTRACT_ONE_ADDRESS) (char *dest, char *source, int offset);
-typedef void (*EXTRACT_CQTEXT) (char *dest, char *source, int len);
-typedef int (*DLIST_INFO) (DLIST *dlist, char *lname, int num, char *address,
-   char *errbuf, LIST *modlist);
-typedef int (*DLIST_COUNT) (UINT_32 flags);
-typedef void (*SEND_NOTIFICATION) (char *username, char *host, char *message);
-typedef int (*GET_DATE_AND_TIME) (BYTE *tm);
-typedef INT_32 (*VERIFY_PASSWORD) (char *username, char *host,
-   char *password, INT_32 select);
-typedef int (*WRITE_PROFILE) (char *section, char *fname);
-typedef int (*MODULE_STATE) (char *modname, int set_value, int state);
-*)
+// typedef UINTP (*GET_VARIABLE) (int index);
+  {$EXTERNALSYM GET_VARIABLE}
+  GET_VARIABlE = function(Index: INT_16): UINTP; cdecl;
+
+// typedef int (*IS_LOCAL_ADDRESS) (char *address, char *uic, char *server);
+  {$EXTERNALSYM IS_LOCAL_ADDRESS}
+  IS_LOCAL_ADDRESS = function(Address, UIC, Server: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*GET_DELIVERY_PATH) (char *path, char *username, char *host);
+  {$EXTERNALSYM GET_DELIVERY_PATH}
+  GET_DELIVERY_PATH = function(Path, UserName, Host: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*IS_GROUP) (char *address, char *host, char *groupname);
+  {$EXTERNALSYM IS_GROUP}
+  IS_GROUP = function(Address, Host, GroupName: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*PARSE_ADDRESS) (char *target, char *source, int limit);
+  {$EXTERNALSYM PARSE_ADDRESS}
+  PARSE_ADDRESS = function(Target, Source: PAnsiChar; Limit: INT_16): INT_16; cdecl;
+
+// typedef int (*EXTRACT_ONE_ADDRESS) (char *dest, char *source, int offset);
+  {$EXTERNALSYM EXTRACT_ONE_ADDRESS}
+  EXTRACT_ONE_ADDRESS = function(Dest, Source: PAnsiChar; Offset: INT_16): INT_16; cdecl;
+
+// typedef void (*EXTRACT_CQTEXT) (char *dest, char *source, int len);
+  {$EXTERNALSYM EXTRACT_CQTEXT}
+  EXTRACT_CQTEXT = procedure(Dest, Source: PAnsiChar; Len: INT_16); cdecl;
+
+// typedef int (*DLIST_INFO) (DLIST *dlist, char *lname, int num, char *address, char *errbuf, LIST *modlist);
+  {$EXTERNALSYM DLIST_INFO}
+  DLIST_INFO = function(Dlist: PDlist; LName: PAnsiChar; Num: INT_16; Address,
+    ErrBuf: PAnsiChar; ModList: PList): INT_16; cdecl;
+
+// typedef int (*DLIST_COUNT) (UINT_32 flags);
+  {$EXTERNALSYM DLIST_COUNT}
+  DLIST_COUNT = function(Flags: UINT_32): INT_16; cdecl;
+
+// typedef void (*SEND_NOTIFICATION) (char *username, char *host, char *message);
+  {$EXTERNALSYM SEND_NOTIFICATION}
+  SEND_NOTIFICATION = procedure (UserName, Host, Message: PAnsiChar); cdecl;
+
+// typedef int (*GET_DATE_AND_TIME) (BYTE *tm);
+  {$EXTERNALSYM GET_DATE_AND_TIME}
+  GET_DATE_AND_TIME = function (tm: PByte): INT_16; cdecl;
+
+// typedef INT_32 (*VERIFY_PASSWORD) (char *username, char *host,
+//    char *password, INT_32 select);
+  {$EXTERNALSYM VERIFY_PASSWORD}
+  VERIFY_PASSWORD = function(UserName, Host, Password: PAnsiChar; Select: INT_32): INT_32; cdecl;
+
+// typedef int (*WRITE_PROFILE) (char *section, char *fname);
+  {$EXTERNALSYM WRITE_PROFILE}
+  WRITE_PROFILE = function(Section, FName: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*MODULE_STATE) (char *modname, int set_value, int state);
+  {$EXTERNALSYM MODULE_STATE}
+  MODULE_STATE = function (ModName: PAnsiChar; Set_Value, State: INT_16): INT_16; cdecl;
 
 //  Job control functions
-(*
-typedef void * (*JI_SCAN_FIRST_JOB) (int type, int mode, void **data);
-typedef void * (*JI_SCAN_NEXT_JOB) (void **data);
-typedef void (*JI_END_SCAN) (void **data);
+// typedef void * (*JI_SCAN_FIRST_JOB) (int type, int mode, void **data);
+  {$EXTERNALSYM JI_SCAN_FIRST_JOB}
+  JI_SCAN_FIRST_JOB = function(AType, Mode: INT_16; Data: PPointer): Pointer; cdecl;
 
-typedef int (*JI_OPEN_JOB) (void *jobhandle);
-typedef int (*JI_CLOSE_JOB) (void *jobhandle);
-typedef void (*JI_REWIND_JOB) (void *jobhandle, int flags);
-typedef int (*JI_DISPOSE_JOB) (void *jobhandle);
-typedef int (*JI_PROCESS_JOB) (void *jobhandle);
-typedef int (*JI_DELETE_JOB) (void *jobhandle);
-typedef int (*JI_ABORT_JOB) (void *jobhandle, int fatal);
-typedef int (*JI_GET_JOB_INFO) (void *jobhandle, JOBINFO *ji);
-typedef int (*JI_GET_JOB_STATE) (void *job, int *jtype, int *jstatus);
+// typedef void * (*JI_SCAN_NEXT_JOB) (void **data);
+  {$EXTERNALSYM JI_SCAN_NEXT_JOB}
+  JI_SCAN_NEXT_JOB = function(Data: PPointer): Pointer; cdecl;
 
-typedef void * (*JI_CREATE_JOB) (int type, char *from,
-   unsigned char *start_time);
-typedef int (*JI_ADD_ELEMENT) (void *jobhandle, char *address);
-typedef int (*JI_ADD_DATA) (void *jobhandle, char *data);
-typedef char * (*JI_GET_DATA) (void *jobhandle, char *buffer, int buflen);
+// typedef void (*JI_END_SCAN) (void **data);
+  {$EXTERNALSYM JI_END_SCAN}
+  JI_END_SCAN = function(Data: PPointer): Pointer; cdecl;
 
-typedef char * (*JI_GET_NEXT_ELEMENT) (void *jobhandle, int type, JOBINFO *job);
-typedef int (*JI_SET_JOB_FLAGS) (void *jobhandle, long flags);
-typedef int (*JI_SET_ELEMENT_STATUS) (void *jobhandle, int mode,
-   unsigned char *date);
-typedef int (*JI_SET_ELEMENT_RESOLVINFO) (void *jobhandle, char *ip1, char *ip2,
-   char *ip3, char *ip4);
+// typedef int (*JI_OPEN_JOB) (void *jobhandle);
+  {$EXTERNALSYM JI_OPEN_JOB}
+  JI_OPEN_JOB = function(JobHandle: Pointer): INT_16; cdecl;
 
-typedef int (*JI_SET_DIAGNOSTICS) (void *jobhandle, int forwhat, char *text);
-typedef int (*JI_GET_DIAGNOSTICS) (void *jobhandle, int forwhat, char *fname);
+// typedef int (*JI_CLOSE_JOB) (void *jobhandle);
+  {$EXTERNALSYM JI_CLOSE_JOB}
+  JI_CLOSE_JOB = function(JobHandle: Pointer): INT_16; cdecl;
 
-typedef void (*JI_INCREMENT_TIME) (unsigned char *tm, unsigned int secs);
+// typedef void (*JI_REWIND_JOB) (void *jobhandle, int flags);
+  {$EXTERNALSYM JI_REWIND_JOB}
+  JI_REWIND_JOB = function(JobHandle: Pointer; Flags: INT_16): INT_16; cdecl;
 
-typedef long (*JI_TELL) (void *jobhandle, int selector);
-typedef int (*JI_SEEK) (void *jobhandle, long ofs, int selector);
+// typedef int (*JI_DISPOSE_JOB) (void *jobhandle);
+  {$EXTERNALSYM JI_DISPOSE_JOB}
+  JI_DISPOSE_JOB = function(JobHandle: Pointer): INT_16; cdecl;
 
-typedef void * (*JI_GET_JOB_BY_ID) (char *id);
-typedef int (*JI_GET_JOB_TIMES) (void *job, char *submitted, char *ready);
+// typedef int (*JI_PROCESS_JOB) (void *jobhandle);
+  {$EXTERNALSYM JI_PROCESS_JOB}
+  JI_PROCESS_JOB = function(JobHandle: Pointer): INT_16; cdecl;
+
+// typedef int (*JI_DELETE_JOB) (void *jobhandle);
+  {$EXTERNALSYM JI_DELETE_JOB}
+  JI_DELETE_JOB = function(JobHandle: Pointer): INT_16; cdecl;
+
+// typedef int (*JI_ABORT_JOB) (void *jobhandle, int fatal);
+  {$EXTERNALSYM JI_ABORT_JOB}
+  JI_ABORT_JOB = function(JobHandle: Pointer): INT_16; cdecl;
+
+// typedef int (*JI_GET_JOB_INFO) (void *jobhandle, JOBINFO *ji);
+  {$EXTERNALSYM JI_GET_JOB_INFO}
+  JI_GET_JOB_INFO = function(JobHandle: Pointer; JobInfo: PJobinfo): INT_16; cdecl;
+
+// typedef int (*JI_GET_JOB_STATE) (void *job, int *jtype, int *jstatus);
+  {$EXTERNALSYM JI_GET_JOB_STATE}
+  JI_GET_JOB_STATE = function(Job: PPointer; JType: PInt16; JStatus: PInt16): INT_16; cdecl;
+
+// typedef void * (*JI_CREATE_JOB) (int type, char *from,
+//   unsigned char *start_time);
+  {$EXTERNALSYM JI_CREATE_JOB}
+  JI_CREATE_JOB = function(AType: INT_16; From: PAnsiChar; StartTime: PAnsiChar): Pointer; cdecl;
+
+// typedef int (*JI_ADD_ELEMENT) (void *jobhandle, char *address);
+  {$EXTERNALSYM JI_ADD_ELEMENT}
+  JI_ADD_ELEMENT = function(JobHandle: Pointer; Address: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*JI_ADD_DATA) (void *jobhandle, char *data);
+  {$EXTERNALSYM JI_ADD_DATA}
+  JI_ADD_DATA = function(JobHandle: Pointer; Data: PAnsiChar): INT_16; cdecl;
+
+// typedef char * (*JI_GET_DATA) (void *jobhandle, char *buffer, int buflen);
+  {$EXTERNALSYM JI_GET_DATA}
+  JI_GET_DATA = function(JobHandle: Pointer; Buffer: PAnsiChar; BufLen: INT_16): PAnsiChar; cdecl;
+
+// typedef char * (*JI_GET_NEXT_ELEMENT) (void *jobhandle, int type, JOBINFO *job);
+  {$EXTERNALSYM JI_GET_NEXT_ELEMENT}
+  JI_GET_NEXT_ELEMENT = function(JobHandle: Pointer; AType: INT_16; Job: PJobinfo): PAnsiChar; cdecl;
+
+// typedef int (*JI_SET_JOB_FLAGS) (void *jobhandle, long flags);
+  {$EXTERNALSYM JI_SET_JOB_FLAGS}
+  JI_SET_JOB_FLAGS = function(JobHandle: Pointer; Flags: LONG): INT_16; cdecl;
+
+//typedef int (*JI_SET_ELEMENT_STATUS) (void *jobhandle, int mode,
+//   unsigned char *date);
+  {$EXTERNALSYM JI_SET_ELEMENT_STATUS}
+  JI_SET_ELEMENT_STATUS = function(JobHandle: Pointer; mode: INT_16; Date: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*JI_SET_ELEMENT_RESOLVINFO) (void *jobhandle, char *ip1, char *ip2,
+//   char *ip3, char *ip4);
+  {$EXTERNALSYM JI_SET_ELEMENT_RESOLVINFO}
+  JI_SET_ELEMENT_RESOLVINFO = function(JobHandle: Pointer; ip1, ip2, ip3, ip4: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*JI_SET_DIAGNOSTICS) (void *jobhandle, int forwhat, char *text);
+  {$EXTERNALSYM JI_SET_DIAGNOSTICS}
+  JI_SET_DIAGNOSTICS = function(JobHandle: Pointer; ForWhat: INT_16; Text: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*JI_GET_DIAGNOSTICS) (void *jobhandle, int forwhat, char *fname);
+  {$EXTERNALSYM JI_GET_DIAGNOSTICS}
+  JI_GET_DIAGNOSTICS = function(JobHandle: Pointer; ForWhat: INT_16; FName: PAnsiChar): INT_16; cdecl;
+
+// typedef void (*JI_INCREMENT_TIME) (unsigned char *tm, unsigned int secs);
+  {$EXTERNALSYM JI_INCREMENT_TIME}
+  JI_INCREMENT_TIME = procedure(tm: PAnsiChar; Secs: UINT_16); cdecl;
+
+// typedef long (*JI_TELL) (void *jobhandle, int selector);
+  {$EXTERNALSYM JI_TELL}
+  JI_TELL = function(JobHandle: Pointer; Selector: INT_16): LONG; cdecl;
+
+// typedef int (*JI_SEEK) (void *jobhandle, long ofs, int selector);
+  {$EXTERNALSYM JI_SEEK}
+  JI_SEEK = function(JobHandle: Pointer; Ofs: LONG; Selector: INT_16): LONG; cdecl;
+
+// typedef void * (*JI_GET_JOB_BY_ID) (char *id);
+  {$EXTERNALSYM JI_GET_JOB_BY_ID}
+  JI_GET_JOB_BY_ID = function(ID: PAnsiChar): Pointer; cdecl;
+
+// typedef int (*JI_GET_JOB_TIMES) (void *job, char *submitted, char *ready);
+  {$EXTERNALSYM JI_GET_JOB_TIMES}
+  JI_GET_JOB_TIMES = function(Job: Pointer; Ready, Submitted: PAnsiChar): INT_16; cdecl;
 
 //  30 May 2005: New for v4.10
-typedef int (*JI_ACCESS_JOB_DATA) (void *jobhandle, char *data_fname, int len);
-typedef int (*JI_UNACCESS_JOB_DATA) (void *jobhandle);
-typedef int (*JI_UPDATE_JOB_DATA) (void *jobhandle, char *dfname);
-typedef void (*JI_ACQUIRE_QUEUE) (int which);
-typedef void (*JI_RELINQUISH_QUEUE) (int which);
-*)
+// typedef int (*JI_ACCESS_JOB_DATA) (void *jobhandle, char *data_fname, int len);
+  {$EXTERNALSYM JI_ACCESS_JOB_DATA}
+  JI_ACCESS_JOB_DATA = function(JobHandle: Pointer; DataFName: PAnsiChar; Len: INT_16): INT_16; cdecl;
+
+// typedef int (*JI_UNACCESS_JOB_DATA) (void *jobhandle);
+  {$EXTERNALSYM JI_UNACCESS_JOB_DATA}
+  JI_UNACCESS_JOB_DATA = function(JobHandle: Pointer): INT_16; cdecl;
+
+// typedef int (*JI_UPDATE_JOB_DATA) (void *jobhandle, char *dfname);
+  {$EXTERNALSYM JI_UPDATE_JOB_DATA}
+  JI_UPDATE_JOB_DATA = function(JobHandle: Pointer; DFName: PAnsiChar): INT_16; cdecl;
+
+// typedef void (*JI_ACQUIRE_QUEUE) (int which);
+  {$EXTERNALSYM JI_ACQUIRE_QUEUE}
+  JI_ACQUIRE_QUEUE = function(Which: INT_16): INT_16; cdecl;
+
+// typedef void (*JI_RELINQUISH_QUEUE) (int which);
+  {$EXTERNALSYM JI_RELINQUISH_QUEUE}
+  JI_RELINQUISH_QUEUE = function(Which: INT_16): INT_16; cdecl;
 
 //  MNICA functions
-(*
-typedef int (*GET_FIRST_GROUP_MEMBER) (char *group, char *host, char *member,
-   int mlen, void **data);
-typedef int (*GET_NEXT_GROUP_MEMBER) (char *member, int mlen, void **data);
-typedef int (*END_GROUP_SCAN) (void **data);
-typedef int (*IS_VALID_LOCAL_USER) (char *address, char *username, char *host);
-typedef int (*IS_GROUP_MEMBER) (char *host, char *username, char *groupname);
-typedef int (*GET_FIRST_USER_DETAILS) (char *host, char *match, char *username,
-   int ulen, char *address, int alen, char *fullname, int flen, void **data);
-typedef int (*GET_NEXT_USER_DETAILS) (char *username, int ulen, char *address,
-   int alen, char *fullname, int flen, void **data);
-typedef int (*GET_USER_DETAILS) (char *host, char *match, char *username, int ulen,
-   char *address, int alen, char *fullname, int flen);
-typedef int (*END_USER_SCAN) (void **data);
-typedef void (*READ_PMPROP) (char *userid, char *server, PMPROP *p);
-typedef int (*CHANGE_OWNERSHIP) (char *fname, char *host, char *newowner);
-typedef int (*BEGIN_SINGLE_DELIVERY) (char *uic, char *server, void **data);
-typedef void (*END_SINGLE_DELIVERY) (void **data);
-typedef INT_32 (*IS_NETWORK_READY) (INT_32 quick);
-*)
+// typedef int (*GET_FIRST_GROUP_MEMBER) (char *group, char *host, char *member,
+//   int mlen, void **data);
+   {$EXTERNALSYM GET_FIRST_GROUP_MEMBER}
+   GET_FIRST_GROUP_MEMBER = function(Group, Host, Member: PAnsiChar;
+     mLen: INT_16; Data: PPointer): INT_16; cdecl;
+
+// typedef int (*GET_NEXT_GROUP_MEMBER) (char *member, int mlen, void **data);
+   {$EXTERNALSYM GET_NEXT_GROUP_MEMBER}
+   GET_NEXT_GROUP_MEMBER = function(Member: PAnsiChar; mLen: INT_16; Data: PPointer): INT_16; cdecl;
+
+// typedef int (*END_GROUP_SCAN) (void **data);
+   {$EXTERNALSYM END_GROUP_SCAN}
+   END_GROUP_SCAN = function(Data: PPointer): INT_16; cdecl;
+
+// typedef int (*IS_VALID_LOCAL_USER) (char *address, char *username, char *host);
+   {$EXTERNALSYM IS_VALID_LOCAL_USER}
+   IS_VALID_LOCAL_USER = function(Address, UserName, Host: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*IS_GROUP_MEMBER) (char *host, char *username, char *groupname);
+   {$EXTERNALSYM IS_GROUP_MEMBER}
+   IS_GROUP_MEMBER = function(Host, UserName, GroupName: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*GET_FIRST_USER_DETAILS) (char *host, char *match, char *username,
+//    int ulen, char *address, int alen, char *fullname, int flen, void **data);
+   {$EXTERNALSYM GET_FIRST_USER_DETAILS}
+   GET_FIRST_USER_DETAILS = function(Host, Match, UserName: PAnsiChar; ULen: INT_16;
+     Address: PAnsiChar; ALen: INT_16; FullName: PAnsiChar; FLen: INT_16;
+     Data: PPointer): INT_16; cdecl;
+
+// typedef int (*GET_NEXT_USER_DETAILS) (char *username, int ulen, char *address,
+//    int alen, char *fullname, int flen, void **data);
+   {$EXTERNALSYM GET_NEXT_USER_DETAILS}
+   GET_NEXT_USER_DETAILS = function(Host: PAnsiChar; ULen: INT_16;
+     Address: PAnsiChar; ALen: INT_16; FullName: PAnsiChar; FLen: INT_16;
+     Data: PPointer): INT_16; cdecl;
+
+// typedef int (*GET_USER_DETAILS) (char *host, char *match, char *username, int ulen,
+//    char *address, int alen, char *fullname, int flen);
+   {$EXTERNALSYM GET_USER_DETAILS}
+   GET_USER_DETAILS = function(Host, Match, UserName: PAnsiChar; ULen: INT_16;
+     Address: PAnsiChar; ALen: INT_16; FullName: PAnsiChar; FLen: INT_16): INT_16; cdecl;
+
+// typedef int (*END_USER_SCAN) (void **data);
+   {$EXTERNALSYM END_USER_SCAN}
+   END_USER_SCAN = function(Data: PPointer): INT_16; cdecl;
+
+// typedef void (*READ_PMPROP) (char *userid, char *server, PMPROP *p);
+   {$EXTERNALSYM READ_PMPROP}
+   READ_PMPROP = function(UserID, Server: PAnsiChar; P: PPmprop): INT_16; cdecl;
+
+// typedef int (*CHANGE_OWNERSHIP) (char *fname, char *host, char *newowner);
+   {$EXTERNALSYM CHANGE_OWNERSHIP}
+   CHANGE_OWNERSHIP = function(FName, Host, NewOwner: PAnsiChar): INT_16; cdecl;
+
+// typedef int (*BEGIN_SINGLE_DELIVERY) (char *uic, char *server, void **data);
+   {$EXTERNALSYM BEGIN_SINGLE_DELIVERY}
+   BEGIN_SINGLE_DELIVERY = function(UIC, Server: PAnsiChar; Data: PPointer): INT_16; cdecl;
+
+// typedef void (*END_SINGLE_DELIVERY) (void **data);
+   {$EXTERNALSYM END_SINGLE_DELIVERY}
+   END_SINGLE_DELIVERY = procedure(Data: PPointer); cdecl;
+
+// typedef INT_32 (*IS_NETWORK_READY) (INT_32 quick);
+   {$EXTERNALSYM IS_NETWORK_READY}
+   IS_NETWORK_READY = function(Quick: INT_32): INT_16; cdecl;
 
 //  Miscellaneous functions - Mercury 2.11 and later only
-(*
-typedef UINTP (*MERCURY_COMMAND) (DWORD selector, UINTP parm1, UINTP parm2);
-typedef char * (*GET_DATE_STRING) (int dtype, char *buf, BYTE *date);
-typedef char * (*RFC822_TIME) (char *buffer);
-typedef char * (*RFC821_TIME) (char *buffer);
-*)
+// typedef UINTP (*MERCURY_COMMAND) (DWORD selector, UINTP parm1, UINTP parm2);
+   {$EXTERNALSYM MERCURY_COMMAND}
+   MERCURY_COMMAND = function(Selector: DWORD; Param1, Parm2: UINTP): UINTP; cdecl;
+
+// typedef char * (*GET_DATE_STRING) (int dtype, char *buf, BYTE *date);
+   {$EXTERNALSYM GET_DATE_STRING}
+   GET_DATE_STRING = function(DType: INT_16; Buf: PAnsiChar; Date: PByte): PAnsiChar; cdecl;
+
+// typedef char * (*RFC822_TIME) (char *buffer);
+   {$EXTERNALSYM RFC822_TIME}
+   RFC822_TIME = function(Buffer: PAnsiChar): INT_16; cdecl;
+
+// typedef char * (*RFC821_TIME) (char *buffer);
+   {$EXTERNALSYM RFC821_TIME}
+   RFC821_TIME = function(Buffer: PAnsiChar): INT_16; cdecl;
 
 //  File I/O and parsing functions - Mercury 2.15 and later only
-(*
-typedef INT_32 (*FM_OPEN_FILE) (char *path, UINT_32 flags);
-typedef INT_32 (*FM_OPEN_MESSAGE) (IMESSAGE *im, UINT_32 flags);
-typedef int (*FM_CLOSE_MESSAGE) (INT_32 id);
-typedef char * (*FM_GETS) (char *buf, INT_32 max, INT_32 id);
-typedef INT_16 (*FM_GETC) (INT_32 id);
-typedef void (*FM_UNGETC) (INT_16 c, INT_32 id);
-typedef INT_32 (*FM_READ) (INT_32 id, char *buffer, INT_32 bufsize);
-typedef INT_32 (*FM_GETPOS) (INT_32 fil);
-typedef INT_16 (*FM_SETPOS) (INT_32 fil, INT_32 offset);
-typedef INT_32 (*FM_GET_FOLDED_LINE) (INT_32 fil, char *line, int limit);
-typedef char * (*FM_FIND_HEADER) (INT_32 fil, char *name, char *buf, int len);
-typedef int (*FM_EXTRACT_MESSAGE) (void *job, char *fname, int flags);
+// typedef INT_32 (*FM_OPEN_FILE) (char *path, UINT_32 flags);
+{$EXTERNALSYM FM_OPEN_FILE}
+   FM_OPEN_FILE = function(Path: PAnsiChar; Flags: UINT_32): INT_32; cdecl;
 
-typedef int (*PARSE_HEADER) (INT_32 fil, IMESSAGE *m);
-typedef int (*MIME_PREP_MESSAGE) (INT_32 fil, char *fname, int headers);
-*)
+// typedef INT_32 (*FM_OPEN_MESSAGE) (IMESSAGE *im, UINT_32 flags);
+{$EXTERNALSYM FM_OPEN_MESSAGE}
+   FM_OPEN_MESSAGE = function(IMessage: Pointer; Flags: UINT_32): INT_32; cdecl;
 
-(*
-#ifdef M_NO_MIME
-typedef int (*_PARSE_MIME) (INT_32 fil, void *m);
-typedef void (*FREE_MIME) (void *m);
-typedef int (*FAKE_IMESSAGE) (IMESSAGE *im, char *dest, char *src,
-   void *m, char *boundary);
-#else
-typedef int (*_PARSE_MIME) (INT_32 fil, IMIME *m);
-typedef void (*FREE_MIME) (IMIME *m);
-typedef int (*FAKE_IMESSAGE) (IMESSAGE *im, char *dest, char *src,
-   IMIME *m, char *boundary);
-#endif
-*)
+// typedef int (*FM_CLOSE_MESSAGE) (INT_32 id);
+{$EXTERNALSYM FM_CLOSE_MESSAGE}
+   FM_CLOSE_MESSAGE = function (ID: INT_32): INT_16; cdecl;
 
-(*
-typedef int (*DECODE_MIME_HEADER) (char *dest, char *src);
-typedef int (*ENCODE_MIME_HEADER) (char *dest, char *src, int raw);
-typedef int (*DECODE_MIME_HEADER_EX) (char *dest, int dlen, char *src, unsigned long flags);
-typedef int (*ENCODE_BASE64_FILE) (char *infname, char *outfname, char *boundary);
-typedef int (*DECODE_BASE64_FILE) (char *infname, char *outfname, char *boundary);
-*)
+// typedef char * (*FM_GETS) (char *buf, INT_32 max, INT_32 id);
+{$EXTERNALSYM FM_GETS}
+   FM_GETS = function(Buf: PAnsiChar; Max, ID: INT_32): PAnsiChar; cdecl;
 
-(*
-typedef void * (*OM_CREATE_MESSAGE) (UINT_32 mtype, UINT_32 flags);
-typedef INT_32 (*OM_DISPOSE_MESSAGE) (void *mhandle);
-typedef INT_32 (*OM_ADD_FIELD) (void *mhandle, UINT_32 selector, char *data);
-typedef INT_32 (*OM_ADD_ATTACHMENT) (void *mhandle, char *fname, char *ftype,
-   char *description, UINT_32 encoding, UINT_32 flags, void *reserved);
-typedef INT_32 (*OM_WRITE_MESSAGE) (void *mhandle, char *fname);
-typedef void * (*OM_SEND_MESSAGE) (void *mhandle, char *envelope);
-*)
+// typedef INT_16 (*FM_GETC) (INT_32 id);
+{$EXTERNALSYM FM_GETC}
+   FM_GETC = function(ID: INT_32): INT_16; cdecl;
 
-(*
-typedef int (*ENCODE_BASE64_STR) (char *dest, char *src, int srclen);
-typedef int (*DECODE_BASE64_STR) (char *dest, char *src, char *table);
-*)
+// typedef void (*FM_UNGETC) (INT_16 c, INT_32 id);
+{$EXTERNALSYM FM_UNGETC}
+   FM_UNGETC = function(c: INT_32; ID: INT_32): INT_16; cdecl;
 
-(*
-typedef INT_32 (*ST_REGISTER_MODULE) (char *module_name);
-typedef INT_32 (*ST_UNREGISTER_MODULE) (INT_32 mhandle);
-typedef INT_32 (*ST_CREATE_CATEGORY) (INT_32 mhandle, char *cname,
-   INT_32 ctag, INT_32 ctype, INT_32 dlen, UINT_32 flags);
-typedef INT_32 (*ST_REMOVE_CATEGORY) (INT_32 mhandle, UINT_32 ctag);
-typedef INT_32 (*ST_SET_HCATEGORY) (INT_32 chandle, UINT_32 data);
-typedef INT_32 (*ST_SET_CATEGORY) (INT_32 mhandle, INT_32 ctag, UINT_32 data);
+// typedef INT_32 (*FM_READ) (INT_32 id, char *buffer, INT_32 bufsize);
+{$EXTERNALSYM FM_READ}
+   FM_READ = function(ID: INT_32; Buffer: PAnsiChar; BufSize: INT_32): INT_32; cdecl;
 
-*)
+// typedef INT_32 (*FM_GETPOS) (INT_32 fil);
+{$EXTERNALSYM FM_GETPOS}
+   FM_GETPOS = function(fil: INT_32): INT_32; cdecl;
+
+// typedef INT_16 (*FM_SETPOS) (INT_32 fil, INT_32 offset);
+{$EXTERNALSYM FM_SETPOS}
+   FM_SETPOS = function(fil, offset: INT_32): INT_16; cdecl;
+
+// typedef INT_32 (*FM_GET_FOLDED_LINE) (INT_32 fil, char *line, int limit);
+{$EXTERNALSYM FM_GET_FOLDED_LINE}
+   FM_GET_FOLDED_LINE = function(fil: INT_32; Line: PAnsiChar; Limit: INT_16): INT_32; cdecl;
+
+// typedef char * (*FM_FIND_HEADER) (INT_32 fil, char *name, char *buf, int len);
+{$EXTERNALSYM FM_FIND_HEADER}
+   FM_FIND_HEADER = function(fil: INT_32; Name, Buf: PAnsiChar; Len: INT_16): INT_32; cdecl;
+
+// typedef int (*FM_EXTRACT_MESSAGE) (void *job, char *fname, int flags);
+{$EXTERNALSYM FM_EXTRACT_MESSAGE}
+   FM_EXTRACT_MESSAGE = function(Job: Pointer; FName: PAnsiChar; Flags: INT_16): INT_32; cdecl;
+
+// typedef int (*PARSE_HEADER) (INT_32 fil, IMESSAGE *m);
+{$EXTERNALSYM PARSE_HEADER}
+   PARSE_HEADER = function(fil: INT_32; m: PIMessage): INT_16; cdecl;
+
+// typedef int (*MIME_PREP_MESSAGE) (INT_32 fil, char *fname, int headers);
+{$EXTERNALSYM MIME_PREP_MESSAGE}
+   MIME_PREP_MESSAGE = function(fir: INT_32; FName: PAnsiChar; Headers: INT_16): INT_32; cdecl;
+
+
+// #ifdef M_NO_MIME
+// typedef int (*_PARSE_MIME) (INT_32 fil, void *m);
+{$EXTERNALSYM _PARSE_MIME1}
+  _PARSE_MIME1 = function(fil: INT_32; m: Pointer): INT_16 cdecl;
+
+// typedef void (*FREE_MIME) (void *m);
+{$EXTERNALSYM FREE_MIME1}
+  FREE_MIME1 = procedure(M: Pointer); cdecl;
+
+// typedef int (*FAKE_IMESSAGE) (IMESSAGE *im, char *dest, char *src,
+//   void *m, char *boundary);
+{$EXTERNALSYM FAKE_IMESSAGE}
+  FAKE_IMESSAGE = function (im: PIMessage; Dest, Src: PAnsiChar; m: Pointer;
+    Boundary: PAnsiChar): INT_16; cdecl;
+
+// #else
+// typedef int (*_PARSE_MIME) (INT_32 fil, IMIME *m);
+{$EXTERNALSYM _PARSE_MIME2}
+  _PARSE_MIME2 = function(fil: INT_32; m: PImime): INT_16; cdecl;
+
+// typedef void (*FREE_MIME) (IMIME *m);
+{$EXTERNALSYM FREE_MIME2}
+  FREE_MIME2 = procedure(m: PImime); cdecl;
+
+// typedef int (*FAKE_IMESSAGE) (IMESSAGE *im, char *dest, char *src,
+//   IMIME *m, char *boundary);
+{$EXTERNALSYM FAKE_IMESSAGE2}
+  FAKE_IMESSAGE2 = function(im: PIMESSAGE; Dest, Src: PAnsiChar; m: PImime;
+    Boundary: PAnsiChar): INT_16; cdecl;
+// #endif
+// *)
+
+//typedef int (*DECODE_MIME_HEADER) (char *dest, char *src);
+{$EXTERNALSYM DECODE_MIME_HEADER}
+  DECODE_MIME_HEADER = function(Dest, Src: PAnsiChar): INT_16; cdecl;
+
+//typedef int (*ENCODE_MIME_HEADER) (char *dest, char *src, int raw);
+{$EXTERNALSYM ENCODE_MIME_HEADER}
+  ENCODE_MIME_HEADER = function(Dest, Src: PAnsiChar; Raw: INT_16): INT_16; cdecl;
+
+//typedef int (*DECODE_MIME_HEADER_EX) (char *dest, int dlen, char *src, unsigned long flags);
+{$EXTERNALSYM DECODE_MIME_HEADER_EX}
+  DECODE_MIME_HEADER_EX = function(Dest: PAnsiChar; DLen: INT_16;
+    Src: PAnsiChar; Flags: ULONG): INT_16; cdecl;
+
+//typedef int (*ENCODE_BASE64_FILE) (char *infname, char *outfname, char *boundary);
+{$EXTERNALSYM ENCODE_BASE64_FILE}
+  ENCODE_BASE64_FILE = function(InFName, OutFName, Boundary: PAnsiChar): INT_16; cdecl;
+
+//typedef int (*DECODE_BASE64_FILE) (char *infname, char *outfname, char *boundary);
+{$EXTERNALSYM DECODE_BASE64_FILE}
+  DECODE_BASE64_FILE = function(InFName, OutFName, Boundary: PAnsiChar): INT_16; cdecl;
+
+//typedef void * (*OM_CREATE_MESSAGE) (UINT_32 mtype, UINT_32 flags);
+{$EXTERNALSYM OM_CREATE_MESSAGE}
+  OM_CREATE_MESSAGE = function(m_type, flags: UINT_32): Pointer; cdecl;
+
+//typedef INT_32 (*OM_DISPOSE_MESSAGE) (void *mhandle);
+{$EXTERNALSYM OM_DISPOSE_MESSAGE}
+  OM_DISPOSE_MESSAGE = function(mhandle: PPointer): UINT_32; cdecl;
+
+//typedef INT_32 (*OM_ADD_FIELD) (void *mhandle, UINT_32 selector, char *data);
+{$EXTERNALSYM OM_ADD_FIELD}
+  OM_ADD_FIELD = function(m_type: Pointer; Selector: UINT_32; Data: PAnsiChar): UINT_32; cdecl;
+
+//typedef INT_32 (*OM_ADD_ATTACHMENT) (void *mhandle, char *fname, char *ftype,
+//   char *description, UINT_32 encoding, UINT_32 flags, void *reserved);
+{$EXTERNALSYM OM_ADD_ATTACHMENT}
+  OM_ADD_ATTACHMENT = function(mhandle: Pointer; FName, FType,
+    Description: PAnsiChar; Encoding, Flags: UINT_32; Reserved: Pointer): UINT_32; cdecl;
+
+//typedef INT_32 (*OM_WRITE_MESSAGE) (void *mhandle, char *fname);
+{$EXTERNALSYM OM_WRITE_MESSAGE}
+  OM_WRITE_MESSAGE = function(mHandle: Pointer; FName: PAnsiChar): UINT_32; cdecl;
+
+//typedef void * (*OM_SEND_MESSAGE) (void *mhandle, char *envelope);
+{$EXTERNALSYM OM_SEND_MESSAGE}
+  OM_SEND_MESSAGE = function(mHandle: Pointer; FName: PAnsiChar): Pointer; cdecl;
+
+//typedef int (*ENCODE_BASE64_STR) (char *dest, char *src, int srclen);
+{$EXTERNALSYM ENCODE_BASE64_STR}
+  ENCODE_BASE64_STR = function(Dest, Src: PAnsiChar; SrcLen: INT_16): INT_16; cdecl;
+
+//typedef int (*DECODE_BASE64_STR) (char *dest, char *src, char *table);
+{$EXTERNALSYM DECODE_BASE64_STR}
+  DECODE_BASE64_STR = function(Dest, Src, Table: PAnsiChar): INT_16; cdecl;
+
+//typedef INT_32 (*ST_REGISTER_MODULE) (char *module_name);
+{$EXTERNALSYM ST_REGISTER_MODULE}
+  ST_REGISTER_MODULE = function(ModuleName: PAnsiChar): INT_32; cdecl;
+
+//typedef INT_32 (*ST_UNREGISTER_MODULE) (INT_32 mhandle);
+{$EXTERNALSYM ST_UNREGISTER_MODULE}
+  ST_UNREGISTER_MODULE = function(Handle: INT_32): INT_32; cdecl;
+
+//typedef INT_32 (*ST_CREATE_CATEGORY) (INT_32 mhandle, char *cname,
+//   INT_32 ctag, INT_32 ctype, INT_32 dlen, UINT_32 flags);
+{$EXTERNALSYM ST_CREATE_CATEGORY}
+  ST_CREATE_CATEGORY = function(Handle: INT_32; CName: PAnsiChar; ctag, ctype,
+    dlen: INT_32; Flags: UINT_32): INT_32; cdecl;
+
+//typedef INT_32 (*ST_REMOVE_CATEGORY) (INT_32 mhandle, UINT_32 ctag);
+{$EXTERNALSYM ST_REMOVE_CATEGORY}
+  ST_REMOVE_CATEGORY = function(Handle: INT_32; ctag: UINT_32): INT_32; cdecl;
+
+//typedef INT_32 (*ST_SET_HCATEGORY) (INT_32 chandle, UINT_32 data);
+{$EXTERNALSYM ST_SET_HCATEGORY}
+  ST_SET_HCATEGORY = function(CHandle: INT_32; Data: UINT_32): INT_32; cdecl;
+
+//typedef INT_32 (*ST_SET_CATEGORY) (INT_32 mhandle, INT_32 ctag, UINT_32 data);
+{$EXTERNALSYM ST_SET_CATEGORY}
+  ST_SET_CATEGORY = function(Handle, ctag: INT_32; Data: UINT_32): INT_32; cdecl;
 
 //void LOGSTRING (INT_16 ltype, INT_16 priority, char *str);
-
-  LOGSTRING = procedure (ltype: INT_16; priority: INT_16; str: PAnsiChar); cdecl;
+  LOGSTRING = procedure (ltype, priority: INT_16; str: PAnsiChar); cdecl;
 
 //void LOGDATA (INT_16 ltype, INT_16 priority, char *fmt, ...);
+  LOGDATA = procedure (ltype, priority: INT_16; fmt: PAnsiChar); cdecl varargs;
 
-  LOGDATA = procedure (ltype: INT_16; priority: INT_16; fmt: PAnsiChar); cdecl varargs;
+// typedef INT_32 (*CREATE_OBJECT) (char *objectname, INT_32 objecttype,
+//    char *id, INT_32 flags);
+  CREATE_OBJECT = function(ObjectName: PChar; ObjectType: INT_32; ID: PAnsiChar;
+    Flags: INT_32): INT_32; cdecl;
 
-(*
-typedef INT_32 (*CREATE_OBJECT) (char *objectname, INT_32 objecttype,
-   char *id, INT_32 flags);
-typedef INT_32 (*SET_PASSWORD) (char *username, char *host, char *newpassword,
-   char *oldpassword, INT_32 select);
+// typedef INT_32 (*SET_PASSWORD) (char *username, char *host, char *newpassword,
+//    char *oldpassword, INT_32 select);
+   SET_PASSWORD = function(UserName, Host, NewPassword, OldPassword: PAnsiChar;
+     Select: INT_32): INT_32; cdecl;
 
-typedef INT_32 (*ST_GET_NEXT_MODULE) (INT_32 mhandle, char *modname);
-typedef INT_32 (*ST_GET_NEXT_CATEGORY) (INT_32 mhandle, INT_32 chandle,
-   char *cname, INT_32 *ctype, INT_32 *clen, INT_32 *cflags);
-typedef INT_32 (*ST_GET_CATEGORY_DATA) (INT_32 chandle, void *data);
-typedef INT_32 (*ST_EXPORT_STATS) (INT_32 mhandle, char *fname, UINT_32 flags);
+// typedef INT_32 (*ST_GET_NEXT_MODULE) (INT_32 mhandle, char *modname);
+   ST_GET_NEXT_MODULE = function(ModuleHandle: INT_32; ModuleName: PAnsiChar): INT_32; cdecl;
 
-typedef INT_32 (*SELECT_PRINTER) (char *devicename, int maxlen);
-typedef INT_32 (* PRINT_FILE) (char *fname, char *printername, UINT_32 flags,
-   INT_32 lrmargin, INT_32 tbmargin, char *title, char *username, char *fontname,
-   INT_32 fontsize);
+// typedef INT_32 (*ST_GET_NEXT_CATEGORY) (INT_32 mhandle, INT_32 chandle,
+//    char *cname, INT_32 *ctype, INT_32 *clen, INT_32 *cflags);
+   ST_GET_NEXT_CATEGORY = function(ModuleHandle, CHandle: INT_32; CName: PAnsiChar;
+     CType, CLen, CFlags: PUInt32): INT_32; cdecl;
+
+// typedef INT_32 (*ST_GET_CATEGORY_DATA) (INT_32 chandle, void *data);
+  ST_GET_CATEGORY_DATA = function(CategoryHandle: INT_32; Data: Pointer): INT_32; cdecl;
+
+// typedef INT_32 (*ST_EXPORT_STATS) (INT_32 mhandle, char *fname, UINT_32 flags);
+  ST_EXPORT_STATS = function(ModuleHandle: INT_32; FName: PAnsiChar; Flags: UINT_32): INT_32; cdecl;
+
+// typedef INT_32 (*SELECT_PRINTER) (char *devicename, int maxlen);
+  SELECT_PRINTER = function(DeviceName: PAnsiChar; MaxLen: INT_16): INT_32; cdecl;
+
+// typedef INT_32 (* PRINT_FILE) (char *fname, char *printername, UINT_32 flags,
+//    INT_32 lrmargin, INT_32 tbmargin, char *title, char *username, char *fontname,
+//    INT_32 fontsize);
+  PRINT_FILE = function(FName, PrinterName: PAnsiChar; Flags: UINT_32;
+    LRMargin, TBMargin: INT_32; Title, UserName, FontName: PAnsiChar;
+    FontSize: INT_32) : INT_32; cdecl;
 
 //  Folder management functions - Mercury/32 v3.01b and later
 
-typedef INT_16 (*FM_COPY_MESSAGE) (IMESSAGE *im, FOLDER *dest);
-typedef INT_16 (*FM_DELETE_MESSAGE) (IMESSAGE *im, UINT_32 flags);
-typedef INT_16 (*FM_MOVE_MESSAGE) (IMESSAGE *im, FOLDER *dest);
-typedef INT_16 (*FM_SAVE_MESSAGE_STATUS) (IMESSAGE *im);
-typedef INT_16 (*FM_SAVE_MESSAGE_READ_STATUS) (IMESSAGE *im, BOOL isread);
-typedef INT_16 (*FM_SAVE_MESSAGE_FIELDS) (IMESSAGE *im);
-typedef INT_16 (*FM_RELEASE_MESSAGE) (IMESSAGE *im);
+// typedef INT_16 (*FM_COPY_MESSAGE) (IMESSAGE *im, FOLDER *dest);
+  FM_COPY_MESSAGE = function (im: PIMessage; Dest: PFolder): INT_16; cdecl;
+
+// typedef INT_16 (*FM_DELETE_MESSAGE) (IMESSAGE *im, UINT_32 flags);
+  FM_DELETE_MESSAGE = function(im: PIMessage; Flags: UINT_32): INT_16; cdecl;
+
+// typedef INT_16 (*FM_MOVE_MESSAGE) (IMESSAGE *im, FOLDER *dest);
+  FM_MOVE_MESSAGE = function (im: PIMessage; Dest: PFolder): INT_16; cdecl;
+
+// typedef INT_16 (*FM_SAVE_MESSAGE_STATUS) (IMESSAGE *im);
+  FM_SAVE_MESSAGE_STATUS = function (im: PIMessage): INT_16; cdecl;
+
+// typedef INT_16 (*FM_SAVE_MESSAGE_READ_STATUS) (IMESSAGE *im, BOOL isread);
+  FM_SAVE_MESSAGE_READ_STATUS = function (im: PIMessage; IsRead: BOOL): INT_16; cdecl;
+
+// typedef INT_16 (*FM_SAVE_MESSAGE_FIELDS) (IMESSAGE *im);
+  FM_SAVE_MESSAGE_FIELDS = function (im: PIMessage): INT_16; cdecl;
+
+// typedef INT_16 (*FM_RELEASE_MESSAGE) (IMESSAGE *im);
+  FM_RELEASE_MESSAGE = function (im: PIMessage): INT_16; cdecl;
 
 
 //  In FOL_MSG.C
-typedef char * (*FM_FIND_MESSAGE_HEADER) (IMESSAGE *im, char *name, char *buf, int len);
-typedef int (*FM_EXTRACT_FILE_MESSAGE) (INT_32 ifil, char *fname, int flags);
-typedef int (*FM_EXTRACT_MSG_MESSAGE) (IMESSAGE *im, char *fname, int flags);
-typedef INT_16 (*FM_IS_NEWMAIL) (INT_32 message);
+// typedef char * (*FM_FIND_MESSAGE_HEADER) (IMESSAGE *im, char *name, char *buf, int len);
+  FM_FIND_MESSAGE_HEADER = function (im: PIMessage; Name, Buf: PAnsiChar; Len: INT_16): PAnsiChar; cdecl;
 
+// typedef int (*FM_EXTRACT_FILE_MESSAGE) (INT_32 ifil, char *fname, int flags);
+  FM_EXTRACT_FILE_MESSAGE = function(IFil: INT_32; FName: PAnsiChar; Flags: INT_16): INT_16; cdecl;
+
+// typedef int (*FM_EXTRACT_MSG_MESSAGE) (IMESSAGE *im, char *fname, int flags);
+  FM_EXTRACT_MSG_MESSAGE = function(im: PIMessage; FName: PChar; Flags: INT_16): INT_16; cdecl;
+
+// typedef INT_16 (*FM_IS_NEWMAIL) (INT_32 message);
+  FM_IS_NEWMAIL = function(Message: UINT_32): INT_16; cdecl;
 
 //  In FOL_FLDR.C
-typedef FOLDER * (*FM_CREATE_FOLDER) (void *cdata, char *module_name, char *vname);
-typedef FOLDER * (*FM_CREATE_FOLDER_EX) (void *cdata, char *module_name, char *vname,
-   INT_32 flags, INT_16 mailbox_id);
-typedef INT_16 (*FM_OPEN_FOLDER) (FOLDER *folder, HWND hWnd, UINT_32 flags);
-typedef INT_16 (*FM_CLOSE_FOLDER) (FOLDER *folder);
-typedef INT_16 (*FM_DELETE_FOLDER) (FOLDER *folder);
-typedef INT_16 (*FM_RENAME_FOLDER) (FOLDER *folder, char *newname);
-typedef FOLDER * (*FM_FIND_FOLDER) (void *cdata, char *unique_id, char *vname, int vlen);
-typedef FOLDER * (*FM_FIND_FOLDER_BY_NAME) (void *cdata, char *vname);
-typedef FOLDER * (*FM_GET_FOLDER) (void *cdata, UINT_32 *offset, UINT_32 flags, INT_16 mailbox_id);
+// typedef FOLDER * (*FM_CREATE_FOLDER) (void *cdata, char *module_name, char *vname);
 
+// typedef FOLDER * (*FM_CREATE_FOLDER_EX) (void *cdata, char *module_name, char *vname,
+//   INT_32 flags, INT_16 mailbox_id);
+
+// typedef INT_16 (*FM_OPEN_FOLDER) (FOLDER *folder, HWND hWnd, UINT_32 flags);
+
+// typedef INT_16 (*FM_CLOSE_FOLDER) (FOLDER *folder);
+
+// typedef INT_16 (*FM_DELETE_FOLDER) (FOLDER *folder);
+
+// typedef INT_16 (*FM_RENAME_FOLDER) (FOLDER *folder, char *newname);
+
+// typedef FOLDER * (*FM_FIND_FOLDER) (void *cdata, char *unique_id, char *vname, int vlen);
+
+// typedef FOLDER * (*FM_FIND_FOLDER_BY_NAME) (void *cdata, char *vname);
+
+// typedef FOLDER * (*FM_GET_FOLDER) (void *cdata, UINT_32 *offset, UINT_32 flags, INT_16 mailbox_id);
 
 //  In FOL_MISC.C
-typedef HWND (*FM_GET_FOLDER_WINDOW) (FOLDER *folder, char *name);
-typedef INT_16 (*FM_COPY_FILE_INTO_FOLDER) (FOLDER *dest, char *fname,
-   IMESSAGE *im, UINT_32 flags, UINT_32 mflags);
+// typedef HWND (*FM_GET_FOLDER_WINDOW) (FOLDER *folder, char *name);
+
+// typedef INT_16 (*FM_COPY_FILE_INTO_FOLDER) (FOLDER *dest, char *fname,
+//   IMESSAGE *im, UINT_32 flags, UINT_32 mflags);
 
 
 //  In FOL_INIT.C
-#define FSF_UNIQUE 1
+// #define FSF_UNIQUE 1
 
-typedef void * (*FM_STARTUP) (char *username, char *password, UINT_32 flags);
-typedef void (*FM_SHUTDOWN) (void *fcdata, int terminating);
-typedef INT_32 (*FM_RESYNCH_NEWMAILBOX) (void *cdata, INT_16 is_timer, INT_16 sync_limit);
-typedef INT_16 (*FM_MOUNT_MAILBOX) (void *fcdata, char *path, char *name, UINT_32 flags);
-typedef INT_16 (*FM_UNMOUNT_MAILBOX) (void *fcdata, INT_16 mailbox_id);
-typedef DWORD (*FM_SEND_MESSAGE) (FOLDER *folder, UINT wMsg, UINT_32 parm1, UINT_32 parm2);
-typedef UINT_32 (*FM_GET_MESSAGE_CAPS) (IMESSAGE *im);
-typedef INT_16 (*FM_GET_MAILBOX_UID) (void *fcdata, INT_16 mbx_id, char *unique_id);
-typedef INT_32 (*FM_GET_INSTANCES) (void *fcdata, FOLDER *folder);
-typedef INT_32 (*FM_LOCK) (void *fcdata);
-typedef INT_32 (*FM_UNLOCK) (void *fcdata);
+// typedef void * (*FM_STARTUP) (char *username, char *password, UINT_32 flags);
+
+// typedef void (*FM_SHUTDOWN) (void *fcdata, int terminating);
+
+// typedef INT_32 (*FM_RESYNCH_NEWMAILBOX) (void *cdata, INT_16 is_timer, INT_16 sync_limit);
+
+// typedef INT_16 (*FM_MOUNT_MAILBOX) (void *fcdata, char *path, char *name, UINT_32 flags);
+
+// typedef INT_16 (*FM_UNMOUNT_MAILBOX) (void *fcdata, INT_16 mailbox_id);
+
+// typedef DWORD (*FM_SEND_MESSAGE) (FOLDER *folder, UINT wMsg, UINT_32 parm1, UINT_32 parm2);
+
+// typedef UINT_32 (*FM_GET_MESSAGE_CAPS) (IMESSAGE *im);
+
+// typedef INT_16 (*FM_GET_MAILBOX_UID) (void *fcdata, INT_16 mbx_id, char *unique_id);
+
+// typedef INT_32 (*FM_GET_INSTANCES) (void *fcdata, FOLDER *folder);
+
+// typedef INT_32 (*FM_LOCK) (void *fcdata);
+
+// typedef INT_32 (*FM_UNLOCK) (void *fcdata);
 
 
 //  In FPL_FILE.C
-typedef INT_16 (*FM_ASSOCIATE_FILE) (IMESSAGE *im, char *fname, UINT_32 flags);
-typedef INT_16 (*FM_DISSOCIATE_FILE) (IMESSAGE *im);
-*)
+// typedef INT_16 (*FM_ASSOCIATE_FILE) (IMESSAGE *im, char *fname, UINT_32 flags);
 
+// typedef INT_16 (*FM_DISSOCIATE_FILE) (IMESSAGE *im);
 
-(*
 //  In FOL_CODE.C - support for uuencoding and binhex
 // typedef int (*UUDECODE) (int in, FILE *out);
+
 // typedef void (*UUENCODE) (FILE *fil, char *fname);
-typedef void (*CALC_CRC) (INT_16 *crc, int val);
-typedef int (*GET_FILESIZE) (char *name, long *datasize, long *resourcesize);
+
+// typedef void (*CALC_CRC) (INT_16 *crc, int val);
+
+// typedef int (*GET_FILESIZE) (char *name, long *datasize, long *resourcesize);
+
 // typedef int (*FBINHEX) (FILE *dest, char *sourcename);
+
 // typedef int (*UNBINHEX_FILE) (INT_32 fil, FILE *dest);
-typedef int (*UNBINHEX) (INT_32 fil, char *dest, int name_only);
-typedef int (*BINHEX_INFO) (INT_32 fil, char *fname, long *dlength, long *rlength);
 
-*)
+// typedef int (*UNBINHEX) (INT_32 fil, char *dest, int name_only);
 
-////void CALC_CRC (INT_16 *crc, int val);
+// typedef int (*BINHEX_INFO) (INT_32 fil, char *fname, long *dlength, long *rlength);
 
+// void CALC_CRC (INT_16 *crc, int val);
 {$EXTERNALSYM CALC_CRC}
   CALC_CRC = procedure (var crc: INT_16; val: Integer); cdecl;
 
-
-
-(*
 //  In FOLMAN.C
 
-typedef INT_16 (*FMM_UPDATE_HIERARCHY_ENTRY) (void *fcdata, UINT_32 flags, FOLDER *folder);
-typedef INT_16 (*FMM_GET_ENTRY_MAILBOX) (void *fcdata, char *unique_id);
-typedef void (*FMM_INITIALIZE_FOLMAN) (void *fcdata);
-typedef void (*FMM_SHUTDOWN_FOLMAN) (void *fcdata);
-typedef int (*FMM_GET_OBJECT) (void *fcdata, int mbx, int offset, FMM_ENTRY *fme);
-typedef int (*FMM_GET_OBJECT_BY_ID) (void *fcdata, char *id, FMM_ENTRY *fme);
-typedef int (*FMM_CREATE_OBJECT) (void *fcdata, int otype, char *name,
-   char *flags, char *parent_id, FMM_ENTRY *new_fme);
-typedef int (*FMM_DELETE_OBJECT) (void *fcdata, char *id);
-typedef int (*FMM_SET_PARENT) (void *fcdata, char *item_id, char *parent_id);
-typedef int (*FMM_RENAME_OBJECT) (void *fcdata, char *item_id, char *newname);
+// typedef INT_16 (*FMM_UPDATE_HIERARCHY_ENTRY) (void *fcdata, UINT_32 flags, FOLDER *folder);
 
+// typedef INT_16 (*FMM_GET_ENTRY_MAILBOX) (void *fcdata, char *unique_id);
+
+// typedef void (*FMM_INITIALIZE_FOLMAN) (void *fcdata);
+
+// typedef void (*FMM_SHUTDOWN_FOLMAN) (void *fcdata);
+
+// typedef int (*FMM_GET_OBJECT) (void *fcdata, int mbx, int offset, FMM_ENTRY *fme);
+
+// typedef int (*FMM_GET_OBJECT_BY_ID) (void *fcdata, char *id, FMM_ENTRY *fme);
+
+// typedef int (*FMM_CREATE_OBJECT) (void *fcdata, int otype, char *name,
+//   char *flags, char *parent_id, FMM_ENTRY *new_fme);
+
+// typedef int (*FMM_DELETE_OBJECT) (void *fcdata, char *id);
+
+// typedef int (*FMM_SET_PARENT) (void *fcdata, char *item_id, char *parent_id);
+
+// typedef int (*FMM_RENAME_OBJECT) (void *fcdata, char *item_id, char *newname);
 
 //  In FOL_ATT.C  - Attachment management
 
-typedef int (*SCAN_ENCLOSURES) (INT_32 fil, LIST *list);
-typedef int (*GET_ATTACHMENT_LIST) (IMESSAGE *im, LIST *list);
-typedef int (*GET_ATTACHMENTS_FROM_FILE) (char *fname, LIST *list);
+// typedef int (*SCAN_ENCLOSURES) (INT_32 fil, LIST *list);
 
-typedef void (*PROCESS_FILENAME_STRING) (char *dest, char *src);
-typedef int (*MAKE_FILE_FROM_TEMPLATE) (char *tplname, char *outname,
-   char *resultname, void *mjob, char *parms [10]);
+// typedef int (*GET_ATTACHMENT_LIST) (IMESSAGE *im, LIST *list);
+
+// typedef int (*GET_ATTACHMENTS_FROM_FILE) (char *fname, LIST *list);
+
+// typedef void (*PROCESS_FILENAME_STRING) (char *dest, char *src);
+
+// typedef int (*MAKE_FILE_FROM_TEMPLATE) (char *tplname, char *outname,
+//   char *resultname, void *mjob, char *parms [10]);
 
 
 //  In DLIST.C
-typedef void * (*DL_OPEN_MEMBERSHIP) (DLIST *d, int readonly);
-typedef void (*DL_CLOSE_MEMBERSHIP) (void *data);
-typedef INT_32 (*DL_GETPOS) (void *data);
-typedef int (*DL_SETPOS) (void *data, INT_32 pos);
-typedef int (*DL_GET_NEXT_SUBSCRIBER) (void *data, SUBSCRIBER *subs, UINT_32 flags);
-typedef int (*DL_FIND_SUBSCRIBER) (void *data, SUBSCRIBER *subs, char *address);
-typedef int (*DL_VERIFY_LIST_PASSWORD) (DLIST *d, int selector, char *candidate);
-typedef int (*DL_AUTOGENERATE_PASSWORD) (char *pwd, int len, UINT_32 flags);
-typedef int (*DL_ADD_SUBSCRIBER) (void *data, SUBSCRIBER *subs);
-typedef int (*DL_UPDATE_SUBSCRIBER) (void *data, SUBSCRIBER *subs);
-typedef int (*DL_REMOVE_SUBSCRIBER) (void *data, char *address);
-typedef int (*DL_SEND_SUBSCRIPTION_MESSAGE) (DLIST *d, SUBSCRIBER *subs, int unsub);
-typedef int (*DL_SEND_SUBSCRIPTION_CONFIRMATION) (DLIST *d, char *address, char *name, char *pwd);
-typedef int (*DL_COMPLETE_SUBSCRIPTION_CONFIRMATION) (DLIST *d, SUBSCRIBER *subs, char *id);
-typedef void (*DL_ACCESS) (int mode);
+// typedef void * (*DL_OPEN_MEMBERSHIP) (DLIST *d, int readonly);
+
+// typedef void (*DL_CLOSE_MEMBERSHIP) (void *data);
+
+// typedef INT_32 (*DL_GETPOS) (void *data);
+
+// typedef int (*DL_SETPOS) (void *data, INT_32 pos);
+
+// typedef int (*DL_GET_NEXT_SUBSCRIBER) (void *data, SUBSCRIBER *subs, UINT_32 flags);
+
+// typedef int (*DL_FIND_SUBSCRIBER) (void *data, SUBSCRIBER *subs, char *address);
+
+// typedef int (*DL_VERIFY_LIST_PASSWORD) (DLIST *d, int selector, char *candidate);
+
+// typedef int (*DL_AUTOGENERATE_PASSWORD) (char *pwd, int len, UINT_32 flags);
+
+// typedef int (*DL_ADD_SUBSCRIBER) (void *data, SUBSCRIBER *subs);
+
+// typedef int (*DL_UPDATE_SUBSCRIBER) (void *data, SUBSCRIBER *subs);
+
+// typedef int (*DL_REMOVE_SUBSCRIBER) (void *data, char *address);
+
+// typedef int (*DL_SEND_SUBSCRIPTION_MESSAGE) (DLIST *d, SUBSCRIBER *subs, int unsub);
+
+// typedef int (*DL_SEND_SUBSCRIPTION_CONFIRMATION) (DLIST *d, char *address, char *name, char *pwd);
+
+// typedef int (*DL_COMPLETE_SUBSCRIPTION_CONFIRMATION) (DLIST *d, SUBSCRIBER *subs, char *id);
+
+// typedef void (*DL_ACCESS) (int mode);
 
 //  New in v4.1 - you must call "dlist_acquire_list" before attempting
 //  to manipulate a list in any way; you must call dlist_release_list
@@ -2587,20 +2976,23 @@ typedef void (*DL_ACCESS) (int mode);
 //  often as you wish from within the same thread, but you must release
 //  it only once.
 
-typedef int (*DLIST_ACQUIRE_LIST) (char *lname, int waitsecs);
-typedef int (*DLIST_RELEASE_LIST) (char *lname);
+// typedef int (*DLIST_ACQUIRE_LIST) (char *lname, int waitsecs);
+{$EXTERNALSYM DLIST_ACQUIRE_LIST}
+   DLIST_ACQUIRE_LIST = function(ListName: PAnsiChar; WaitSecs: INT_16): INT_16; cdecl;
 
+// typedef int (*DLIST_RELEASE_LIST) (char *lname);
+{$EXTERNALSYM DLIST_RELEASE_LIST}
+   DLIST_RELEASE_LIST = function (ListName: PAnsiChar): INT_16; cdecl;
 
 //  In SPAMBUST.C
-typedef int (*EDIT_MESSAGE_HEADERS) (char *fname, char **additions, char **deletions);
+// typedef int (*EDIT_MESSAGE_HEADERS) (char *fname, char **additions, char **deletions);
 
 
 //  In DISCLAIM.C - text (disclaimer) insertion into messages
-#define DCRF_TOP 1
-typedef int (*DCR_ADD_TEXT_SECTION) (char *destfname, char *sourcefname,
-  char *textfname, char *htmlfname, UINT_32 flags);
+// #define DCRF_TOP 1
+// typedef int (*DCR_ADD_TEXT_SECTION) (char *destfname, char *sourcefname,
+//   char *textfname, char *htmlfname, UINT_32 flags);
 
-*)
 const
 //  Event Registration functions - Mercury/32 v4.1 and later
 
@@ -2614,7 +3006,7 @@ const
   {$EXTERNALSYM MMI_MERCURYE}
   MMI_MERCURYE                        = 30; 
   {$EXTERNALSYM MMI_MERCURYP}
-  MMI_MERCURYP                        = 40; 
+  MMI_MERCURYP                        = 40;
   {$EXTERNALSYM MMI_MERCURYC}
   MMI_MERCURYC                        = 50; 
   {$EXTERNALSYM MMI_MERCURYD}
@@ -2666,15 +3058,26 @@ const
 
 //  RFC2822 date and time parsing routines, v4.61 and later
   {$EXTERNALSYM ET_WANT_SEQUENCE}
-  ET_WANT_SEQUENCE                    = 1; 
+  ET_WANT_SEQUENCE                    = 1;
   {$EXTERNALSYM ET_WANT_STRING}
-  ET_WANT_STRING                      = 2; 
-(*
-typedef long (*EXTRACT_TIME) (char *dstr, BYTE *tm, int flags);
-typedef void (*NORMALIZE_TIME) (BYTE *tm, int offset);
-typedef int (*COMPARE_DATES) (BYTE *date1, BYTE *date2);
-typedef char *(*GET_TIMEZONE) (char *buffer);
-*)
+  ET_WANT_STRING                      = 2;
+
+type
+//typedef long (*EXTRACT_TIME) (char *dstr, BYTE *tm, int flags);
+{$EXTERNALSYM EXTRACT_TIME}
+  EXTRACT_TIME = function(DStr: PAnsiChar; tm: PByte; Flags: INT_16): LONG; cdecl;
+
+//typedef void (*NORMALIZE_TIME) (BYTE *tm, int offset);
+{$EXTERNALSYM NORMALIZE_TIME}
+  NORMALIZE_TIME = function(tm: PByte; Offset: INT_16): LONG; cdecl;
+
+//typedef int (*COMPARE_DATES) (BYTE *date1, BYTE *date2);
+{$EXTERNALSYM COMPARE_DATES}
+  COMPARE_DATES = function(Date1, Date2: PByte): LONG; cdecl;
+
+//typedef char *(*GET_TIMEZONE) (char *buffer);
+{$EXTERNALSYM GET_TIMEZONE}
+  GET_TIMEZONE = function(Buffer: PAnsiChar): LONG; cdecl;
 
 ////typedef struct
 ////   {
@@ -2975,80 +3378,83 @@ type
     vmajor: Byte;
     vminor: Byte;
     hMDIParent: HWND;
-    get_variable: Pointer; // GET_VARIABLE;
-    is_local_address: Pointer; // IS_LOCAL_ADDRESS;
-    is_group: Pointer; // IS_GROUP;
-    parse_address: Pointer; // PARSE_ADDRESS;
-    extract_one_address: Pointer; // EXTRACT_ONE_ADDRESS;
-    extract_cqtext: Pointer; // EXTRACT_CQTEXT;
-    dlist_info: Pointer; // DLIST_INFO;
-    send_notification: Pointer; // SEND_NOTIFICATION;
-    get_delivery_path: Pointer; // GET_DELIVERY_PATH;
-    get_date_and_time: Pointer; // GET_DATE_AND_TIME;
-    verify_password: Pointer; // VERIFY_PASSWORD;
-    write_profile: Pointer; // WRITE_PROFILE;
-    module_state: Pointer; // MODULE_STATE;
-                                                  //  Job control functions
-    ji_scan_first_job: Pointer; // JI_SCAN_FIRST_JOB;
-    ji_scan_next_job: Pointer; // JI_SCAN_NEXT_JOB;
-    ji_end_scan: Pointer; // JI_END_SCAN;
-    ji_open_job: Pointer; // JI_OPEN_JOB;
-    ji_close_job: Pointer; // JI_CLOSE_JOB;
-    ji_rewind_job: Pointer; // JI_REWIND_JOB;
-    ji_dispose_job: Pointer; // JI_DISPOSE_JOB;
-    ji_process_job: Pointer; // JI_PROCESS_JOB;
-    ji_delete_job: Pointer; // JI_DELETE_JOB;
-    ji_abort_job: Pointer; // JI_ABORT_JOB;
-    ji_get_job_info: Pointer; // JI_GET_JOB_INFO;
-    ji_create_job: Pointer; // JI_CREATE_JOB;
-    ji_add_element: Pointer; // JI_ADD_ELEMENT;
-    ji_add_data: Pointer; // JI_ADD_DATA;
-    ji_get_data: Pointer; // JI_GET_DATA;
-    ji_get_next_element: Pointer; // JI_GET_NEXT_ELEMENT;
-    ji_set_element_status: Pointer; // JI_SET_ELEMENT_STATUS;
-    ji_set_element_resolvinfo: Pointer; // JI_SET_ELEMENT_RESOLVINFO;
-    ji_set_diagnostics: Pointer; // JI_SET_DIAGNOSTICS;
-    ji_get_diagnostics: Pointer; // JI_GET_DIAGNOSTICS;
-    ji_increment_time: Pointer; // JI_INCREMENT_TIME;
-                                                  //  MNICA (Network interface) functions
-    get_first_group_member: Pointer; // GET_FIRST_GROUP_MEMBER;
-    get_next_group_member: Pointer; // GET_NEXT_GROUP_MEMBER;
-    end_group_scan: Pointer; // END_GROUP_SCAN;
-    is_valid_local_user: Pointer; // IS_VALID_LOCAL_USER;
-    is_group_member: Pointer; // IS_GROUP_MEMBER;
-    get_first_user_details: Pointer; // GET_FIRST_USER_DETAILS;
-    get_next_user_details: Pointer; // GET_NEXT_USER_DETAILS;
-    get_user_details: Pointer; // GET_USER_DETAILS;
-    end_user_scan: Pointer; // END_USER_SCAN;
-    read_pmprop: Pointer; // READ_PMPROP;
-    change_ownership: Pointer; // CHANGE_OWNERSHIP;
-    begin_single_delivery: Pointer; // BEGIN_SINGLE_DELIVERY;
-    end_single_delivery: Pointer; // END_SINGLE_DELIVERY;
-                                                  //  Miscellaneous functions
-    mercury_command: Pointer; // MERCURY_COMMAND;
-    get_date_string: Pointer; // GET_DATE_STRING;
-    rfc822_time: Pointer; // RFC822_TIME;
-    rfc821_time: Pointer; // RFC821_TIME;
-                                                  //  File parsing and I/O functions
-    fm_open_file: Pointer; // FM_OPEN_FILE;
-    fm_open_message: Pointer; // FM_OPEN_MESSAGE;
-    fm_close_message: Pointer; // FM_CLOSE_MESSAGE;
-    fm_gets: Pointer; // FM_GETS;
-    fm_getc: Pointer; // FM_GETC;
-    fm_ungetc: Pointer; // FM_UNGETC;
-    fm_read: Pointer; // FM_READ;
-    fm_getpos: Pointer; // FM_GETPOS;
-    fm_setpos: Pointer; // FM_SETPOS;
-    fm_get_folded_line: Pointer; // FM_GET_FOLDED_LINE;
-    fm_find_header: Pointer; // FM_FIND_HEADER;
-    fm_extract_message: Pointer; // FM_EXTRACT_MESSAGE;
-    parse_header: Pointer; // PARSE_HEADER;
-    mime_prep_message: Pointer; // MIME_PREP_MESSAGE;
+    get_variable:        GET_VARIABlE;                    // GET_VARIABLE;
+    is_local_address:    IS_LOCAL_ADDRESS;                // IS_LOCAL_ADDRESS;
+    is_group:            IS_GROUP;                        // IS_GROUP;
+    parse_address:       PARSE_ADDRESS;                   // PARSE_ADDRESS;
+    extract_one_address: EXTRACT_ONE_ADDRESS;             // EXTRACT_ONE_ADDRESS;
+    extract_cqtext:      EXTRACT_CQTEXT;                  // EXTRACT_CQTEXT;
+    dlist_info:          DLIST_INFO;                      // DLIST_INFO;
+    send_notification:   SEND_NOTIFICATION;               // SEND_NOTIFICATION;
+    get_delivery_path:   GET_DELIVERY_PATH;               // GET_DELIVERY_PATH;
+    get_date_and_time:   GET_DATE_AND_TIME;               // GET_DATE_AND_TIME;
+    verify_password:     VERIFY_PASSWORD;                 // VERIFY_PASSWORD;
+    write_profile:       WRITE_PROFILE;                   // WRITE_PROFILE;
+    module_state:        MODULE_STATE;                    // MODULE_STATE;
+                                                          // Job control functions
+    ji_scan_first_job:   JI_SCAN_FIRST_JOB;   // JI_SCAN_FIRST_JOB;
+    ji_scan_next_job:    JI_SCAN_NEXT_JOB;    // JI_SCAN_NEXT_JOB;
+    ji_end_scan:         JI_END_SCAN;         // JI_END_SCAN;
+    ji_open_job:         JI_OPEN_JOB;         // JI_OPEN_JOB;
+    ji_close_job:        JI_CLOSE_JOB;        // JI_CLOSE_JOB;
+    ji_rewind_job:       JI_REWIND_JOB;       // JI_REWIND_JOB;
+    ji_dispose_job:      JI_DISPOSE_JOB;      // JI_DISPOSE_JOB;
+    ji_process_job:      JI_PROCESS_JOB;      // JI_PROCESS_JOB;
+    ji_delete_job:       JI_DELETE_JOB;       // JI_DELETE_JOB;
+    ji_abort_job:        JI_ABORT_JOB;        // JI_ABORT_JOB;
+    ji_get_job_info:     JI_GET_JOB_INFO;     // JI_GET_JOB_INFO;
+    ji_create_job:       JI_CREATE_JOB;       // JI_CREATE_JOB;
+    ji_add_element:      JI_ADD_ELEMENT;      // JI_ADD_ELEMENT;
+    ji_add_data:         JI_ADD_DATA;         // JI_ADD_DATA;
+    ji_get_data:         JI_GET_DATA;         // JI_GET_DATA;
+    ji_get_next_element: JI_GET_NEXT_ELEMENT;    // JI_GET_NEXT_ELEMENT;
+    ji_set_element_status: JI_SET_ELEMENT_STATUS; // JI_SET_ELEMENT_STATUS;
+    ji_set_element_resolvinfo: JI_SET_ELEMENT_RESOLVINFO; // JI_SET_ELEMENT_RESOLVINFO;
+    ji_set_diagnostics: JI_SET_DIAGNOSTICS; // JI_SET_DIAGNOSTICS;
+    ji_get_diagnostics: JI_GET_DIAGNOSTICS; // JI_GET_DIAGNOSTICS;
+    ji_increment_time: JI_INCREMENT_TIME; // JI_INCREMENT_TIME;
+
+    //  MNICA (Network interface) functions
+    get_first_group_member: GET_FIRST_GROUP_MEMBER; // GET_FIRST_GROUP_MEMBER;
+    get_next_group_member: GET_NEXT_GROUP_MEMBER;   // GET_NEXT_GROUP_MEMBER;
+    end_group_scan: END_GROUP_SCAN;                 // END_GROUP_SCAN;
+    is_valid_local_user: IS_VALID_LOCAL_USER;       // IS_VALID_LOCAL_USER;
+    is_group_member: IS_GROUP_MEMBER;               // IS_GROUP_MEMBER;
+    get_first_user_details: GET_FIRST_USER_DETAILS; // GET_FIRST_USER_DETAILS;
+    get_next_user_details: GET_NEXT_USER_DETAILS;   // GET_NEXT_USER_DETAILS;
+    get_user_details: GET_USER_DETAILS;             // GET_USER_DETAILS;
+    end_user_scan: END_USER_SCAN;                   // END_USER_SCAN;
+    read_pmprop: READ_PMPROP;                       // READ_PMPROP;
+    change_ownership: CHANGE_OWNERSHIP;             // CHANGE_OWNERSHIP;
+    begin_single_delivery: BEGIN_SINGLE_DELIVERY;   // BEGIN_SINGLE_DELIVERY;
+    end_single_delivery: END_SINGLE_DELIVERY;       // END_SINGLE_DELIVERY;
+
+    //  Miscellaneous functions
+    mercury_command: MERCURY_COMMAND; // MERCURY_COMMAND;
+    get_date_string: GET_DATE_STRING; // GET_DATE_STRING;
+    rfc822_time: RFC822_TIME; // RFC822_TIME;
+    rfc821_time: RFC821_TIME; // RFC821_TIME;
+
+    //  File parsing and I/O functions
+    fm_open_file: FM_OPEN_FILE;                     // FM_OPEN_FILE;
+    fm_open_message: FM_OPEN_MESSAGE;               // FM_OPEN_MESSAGE;
+    fm_close_message: FM_CLOSE_MESSAGE;             // FM_CLOSE_MESSAGE;
+    fm_gets: FM_GETS; // FM_GETS;
+    fm_getc: FM_GETC; // FM_GETC;
+    fm_ungetc: FM_UNGETC; // FM_UNGETC;
+    fm_read: FM_READ; // FM_READ;
+    fm_getpos: FM_GETPOS; // FM_GETPOS;
+    fm_setpos: FM_SETPOS; // FM_SETPOS;
+    fm_get_folded_line: FM_GET_FOLDED_LINE; // FM_GET_FOLDED_LINE;
+    fm_find_header: FM_FIND_HEADER; // FM_FIND_HEADER;
+    fm_extract_message: FM_EXTRACT_MESSAGE; // FM_EXTRACT_MESSAGE;
+    parse_header: PARSE_HEADER; // PARSE_HEADER;
+    mime_prep_message: MIME_PREP_MESSAGE; // MIME_PREP_MESSAGE;
     parse_mime: Pointer; // _PARSE_MIME;
     free_mime: Pointer; // FREE_MIME;
     fake_imessage: Pointer; // FAKE_IMESSAGE;
-    decode_mime_header: Pointer; // DECODE_MIME_HEADER;
-    encode_mime_header: Pointer; // ENCODE_MIME_HEADER;
+    decode_mime_header: DECODE_MIME_HEADER; // DECODE_MIME_HEADER;
+    encode_mime_header: ENCODE_MIME_HEADER; // ENCODE_MIME_HEADER;
     om_create_message: Pointer; // OM_CREATE_MESSAGE;
     om_dispose_message: Pointer; // OM_DISPOSE_MESSAGE;
     om_add_field: Pointer; // OM_ADD_FIELD;
@@ -3066,7 +3472,7 @@ type
     ji_tell: Pointer; // JI_TELL;
     ji_seek: Pointer; // JI_SEEK;
     ji_set_job_flags: Pointer; // JI_SET_JOB_FLAGS;
-    logstring: LOGSTRING;
+    LogString: LOGSTRING;
     logdata: LOGDATA;
     create_object: Pointer; // CREATE_OBJECT;
     set_password: Pointer; // SET_PASSWORD;
@@ -3204,11 +3610,11 @@ type
     oif_recreate_object: OIF_RECREATE_OBJECT; 
     oif_override_object: OIF_OVERRIDE_OBJECT; 
     oif_unoverride_object: OIF_UNOVERRIDE_OBJECT; 
-    extract_time: Pointer; // EXTRACT_TIME;
-    normalize_time: Pointer; // NORMALIZE_TIME;
-    compare_dates: Pointer; // COMPARE_DATES;
-    get_timezone: Pointer; // GET_TIMEZONE;
-    oif_has_type: Pointer; // OIF_HAS_TYPE;
+    extract_time: EXTRACT_TIME; // EXTRACT_TIME;
+    normalize_time: NORMALIZE_TIME; // NORMALIZE_TIME;
+    compare_dates: COMPARE_DATES; // COMPARE_DATES;
+    get_timezone: GET_TIMEZONE; // GET_TIMEZONE;
+    oif_has_type: OIF_HAS_TYPE; // OIF_HAS_TYPE;
   end;
   TMInterface = M_INTERFACE;
 
@@ -3533,27 +3939,25 @@ const
 //typedef void * (*PARSE_URI) (char *uri);
 
 type
-  PARSE_URI = function (uri: PAnsiChar): Pointer; cdecl;
+  PARSE_URI                = function (uri: PAnsiChar): Pointer; cdecl;
 
 //typedef void   (*RELEASE_URI) (void *data);
-  RELEASE_URI = procedure (data: Pointer); cdecl;
+  RELEASE_URI              = procedure (data: Pointer); cdecl;
 
-  PARSE_REQUEST = procedure (condef: Pointer); cdecl;
-  GET_URI_ATTRIBUTE = function (data: Pointer; attr: PAnsiChar): PAnsiChar; cdecl;
-  GET_URI_ATTRIBUTE_N = function (data: Pointer; aval: PPAnsiChar; n: INT_32): PAnsiChar; cdecl;
-  MAKE_URI = function (condef: Pointer; dest: PAnsiChar; dlen: INT_32; body: PAnsiChar): PAnsiChar; cdecl;
-  CHECK_EXISTENCE = function (path: PAnsiChar): INT_32; cdecl;
-  TRIM_TRAILING_WHITESPACE = procedure (str: PAnsiChar);
-  TRIM_NEWLINE = procedure (str: PAnsiChar);
-  MAKE_PATH = function (line, basedir, fname: PAnsiChar): PAnsiChar;
-  MAKE_BASE_PATH = function (line: PAnsiChar; fname: PAnsiChar): PAnsiChar; cdecl;
-  MAKE_EXE_PATH = function (line: PAnsiChar; fname: PAnsiChar): PAnsiChar; cdecl;
-  LOG_EVENT = function(base_fname: PAnsiChar; id: INT_32; &type: AnsiChar; fmt: PAnsiChar): Integer; cdecl varargs;
-  FINDNAME = function (fname: PAnsiChar): PAnsiChar; cdecl;
-  FIND_EXTENSION = function (fname: PAnsiChar): PAnsiChar; cdecl;
-  SKIPWS = function (str: PAnsiChar): PAnsiChar; cdecl;
-
-
+  PARSE_REQUEST            = function (condef: Pointer): Pointer; cdecl;
+  GET_URI_ATTRIBUTE        = function (data: Pointer; attr: PAnsiChar): PAnsiChar; cdecl;
+  GET_URI_ATTRIBUTE_N      = function (data: Pointer; aval: PPAnsiChar; n: INT_32): PAnsiChar; cdecl;
+  MAKE_URI                 = function (condef: Pointer; dest: PAnsiChar; dlen: INT_32; body: PAnsiChar): PAnsiChar; cdecl;
+  CHECK_EXISTENCE          = function (path: PAnsiChar): INT_32; cdecl;
+  TRIM_TRAILING_WHITESPACE = procedure (str: PAnsiChar); cdecl;
+  TRIM_NEWLINE             = procedure (str: PAnsiChar); cdecl;
+  MAKE_PATH                = function (line, basedir, fname: PAnsiChar): PAnsiChar; cdecl;
+  MAKE_BASE_PATH           = function (line: PAnsiChar; fname: PAnsiChar): PAnsiChar; cdecl;
+  MAKE_EXE_PATH            = function (line: PAnsiChar; fname: PAnsiChar): PAnsiChar; cdecl;
+  LOG_EVENT                = function(base_fname: PAnsiChar; id: INT_32; &type: AnsiChar; fmt: PAnsiChar): Integer; cdecl varargs;
+  FINDNAME                 = function (fname: PAnsiChar): PAnsiChar; cdecl;
+  FIND_EXTENSION           = function (fname: PAnsiChar): PAnsiChar; cdecl;
+  SKIPWS                   = function (str: PAnsiChar): PAnsiChar; cdecl;
 
 //typedef void * (*PARSE_REQUEST) (void *condef);
 //typedef char * (*GET_URI_ATTRIBUTE) (void *data, char *attr);
@@ -3595,6 +3999,28 @@ type
 //   FIND_EXTENSION find_extension;
 //   SKIPWS skipws;
 //   } MB_SERVICES;
+  PMB_Services = ^MB_Services;
+  MB_Services = packed record
+    SSize, SVersion: UINT_32;
+
+    ParseUri: PARSE_URI;
+    ReleaseUri: RELEASE_URI;
+    GetUriAttribute: GET_URI_ATTRIBUTE;
+    GetUriAttributeN: GET_URI_ATTRIBUTE_N;
+    ParseRequest: PARSE_REQUEST;
+    MakeUri: MAKE_URI;
+    CheckExistence: CHECK_EXISTENCE;
+    TrimTrailingWhiteSpace: TRIM_TRAILING_WHITESPACE;
+    TrimNewLine: TRIM_NEWLINE;
+    MakePath: MAKE_PATH;
+    MakeBasePath: MAKE_BASE_PATH;
+    MakeExePath: MAKE_EXE_PATH;
+    LogData: LOGDATA;
+    LogEvent: LOG_EVENT;
+    FindName: FINDNAME;
+    FindExtension: FIND_EXTENSION;
+    SkipWS: SKIPWS;
+  end;
 
 const
 
@@ -3628,7 +4054,6 @@ const
 
   {$EXTERNALSYM METHOD_URLENCODED}
   METHOD_URLENCODED                   = 1024; 
-
 
 ////typedef struct _condef
 ////   {
@@ -3665,64 +4090,63 @@ const
 ////   char *o_cdisp;       //  Any optional content-disposition header to return
 ////   } CONDEF;            //  CONversation DEFinition
 
-{$MESSAGE WARN 'Can''t resolve forward issue'}
-//type
-//
-//  PCondef = ^TCondef;
-//  {$EXTERNALSYM _condef}
-//  _condef = packed record 
-//    ssize: UINT_32;                       //  Size of this structure in bytes 
-//    sversion: UINT_32;                    //  Version of this structure 
-//    svc: PSERVICEDEF;                     //  Sub-service associated with this conversation 
-//    data: UINTP;                          //  Sub-service specific data 
-//    flags: UINT_32;                       //  MBCF_* flags for this command 
-//    protocol: UINT_32;                    //  Protocol level of conversation - 9, 10 or 11 
-//    method: UINT_32;                      //  Method used to submit this command 
-//    mi: PM_INTERFACE;                     //  Mercury protocol module function block 
-//    mbs: PMB_SERVICES;                    //  Useful utility functions for external subservices 
-//    username: array[0..63] of AnsiChar;   //  Username (if any) associated with conversation 
-//    ticket: array[0..31] of AnsiChar;     //  Session ticket (for session-based services) 
-//    client: array[0..31] of AnsiChar;     //  IP address of client that initiated conversation 
-//    origin: UINT_32;                      //  Time of original connection (actually a 32-bit "time_t") 
-//    last: UINT_32;                        //  Time of last connection (used for timeouts) 
-//    timeout: INT_32;                      //  Number of seconds to keep ticket alive 
-//    hostname: PAnsiChar;                  //  Name of this host, for building absolute URIs 
-//    uri: PAnsiChar;                       //  The URI to process (if any) 
-//    retval: UINT_32;                      //  HTTP response code for this command 
-//    retindex: UINT_32;                    //  Index for response string for this command 
-//    fname_len: UINT_32;                   //  Maximum length of "...fname" parameters 
-//    iw_fname: PAnsiChar;                  //  File with body and headers of inbound connection
-//    oh_fname: PAnsiChar;                  //  File for headers for outbound reply 
-//    ob_fname: PAnsiChar;                  //  File for body entity for outbound reply 
-//    oa_fname: PAnsiChar;                  //  Alternate (static) file for outbound reply 
-//    o_parm_len: UINT_32;                  //  Allocated length of following optional parameters 
-//    o_location: PAnsiChar;                //  Optional location to report for response file 
-//    o_ctype: PAnsiChar;                   //  Optional content-type field for response file 
-//    port: UINT_32;                        //  The TCP port on which the connection is operating 
-//    incookie: PAnsiChar;                  //  Any cookie received from the connected client 
-//    outcookie: PAnsiChar;                 //  Any cookie to return to the connected client 
-//    o_cdisp: PAnsiChar;                  //  Any optional content-disposition header to return 
-//  end; 
-//  {$EXTERNALSYM CONDEF} 
-//  CONDEF = _condef; 
-//  TCondef = _condef; 
-//  //  CONversation DEFinition
-//
+type
+
+  PServiceDef = ^TServiceDef;
+  PCondef = ^TCondef;
+  {$EXTERNALSYM _condef}
+  _condef = packed record
+    ssize: UINT_32;                       //  Size of this structure in bytes
+    sversion: UINT_32;                    //  Version of this structure
+    svc: PSERVICEDEF;                     //  Sub-service associated with this conversation
+    data: UINTP;                          //  Sub-service specific data
+    flags: UINT_32;                       //  MBCF_* flags for this command
+    protocol: UINT_32;                    //  Protocol level of conversation - 9, 10 or 11
+    method: UINT_32;                      //  Method used to submit this command
+    mi: PM_INTERFACE;                     //  Mercury protocol module function block
+    mbs: PMB_SERVICES;                    //  Useful utility functions for external subservices
+    username: array[0..63] of AnsiChar;   //  Username (if any) associated with conversation
+    ticket: array[0..31] of AnsiChar;     //  Session ticket (for session-based services)
+    client: array[0..31] of AnsiChar;     //  IP address of client that initiated conversation
+    origin: UINT_32;                      //  Time of original connection (actually a 32-bit "time_t")
+    last: UINT_32;                        //  Time of last connection (used for timeouts)
+    timeout: INT_32;                      //  Number of seconds to keep ticket alive
+    hostname: PAnsiChar;                  //  Name of this host, for building absolute URIs
+    uri: PAnsiChar;                       //  The URI to process (if any)
+    retval: UINT_32;                      //  HTTP response code for this command
+    retindex: UINT_32;                    //  Index for response string for this command
+    fname_len: UINT_32;                   //  Maximum length of "...fname" parameters
+    iw_fname: PAnsiChar;                  //  File with body and headers of inbound connection
+    oh_fname: PAnsiChar;                  //  File for headers for outbound reply
+    ob_fname: PAnsiChar;                  //  File for body entity for outbound reply
+    oa_fname: PAnsiChar;                  //  Alternate (static) file for outbound reply
+    o_parm_len: UINT_32;                  //  Allocated length of following optional parameters
+    o_location: PAnsiChar;                //  Optional location to report for response file
+    o_ctype: PAnsiChar;                   //  Optional content-type field for response file
+    port: UINT_32;                        //  The TCP port on which the connection is operating
+    incookie: PAnsiChar;                  //  Any cookie received from the connected client
+    outcookie: PAnsiChar;                 //  Any cookie to return to the connected client
+    o_cdisp: PAnsiChar;                  //  Any optional content-disposition header to return
+  end;
+  {$EXTERNALSYM CONDEF}
+  CONDEF = _condef;
+  TCondef = _condef;
+  //  CONversation DEFinition
+
 //  CONDEF = _condef;
-//////INT_32 MBHANDLER (CONDEF *cd, UINT_32 command, UINTP parm1, UINTP parm2);
-//
-//{$EXTERNALSYM MBHANDLER}
-//  MBHANDLER = function (var cd: CONDEF; command: UINT_32; parm1: UINTP; parm2: UINTP): INT_32; cdecl;
-//
-//  PServicedef = ^TServicedef;
-//  {$EXTERNALSYM SERVICEDEF}
-//  SERVICEDEF = packed record
-//    servicename: array[0..79] of AnsiChar;
-//    flags: UINT_32;
-//    handler: MBHANDLER;
-//    hLib: HINSTANCE;
-//  end;
-//  TServicedef = SERVICEDEF;
+////INT_32 MBHANDLER (CONDEF *cd, UINT_32 command, UINTP parm1, UINTP parm2);
+
+{$EXTERNALSYM MBHANDLER}
+  MBHANDLER = function (var cd: CONDEF; command: UINT_32; parm1: UINTP; parm2: UINTP): INT_32; cdecl;
+
+  {$EXTERNALSYM SERVICEDEF}
+  SERVICEDEF = packed record
+    ServiceName: array[0..79] of AnsiChar;
+    Flags: UINT_32;
+    Handler: MBHANDLER;
+    HLib: THandle; //HINSTANCE;
+  end;
+  TServicedef = SERVICEDEF;
 
 //#ifdef __VISUALC__
 //#pragma pack(pop)

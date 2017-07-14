@@ -1,12 +1,13 @@
-unit uMercuryPOP3EventHandler;
+unit Mercury.POP3.EventHandlers;
 {.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {.$STRONGLINKTYPES OFF}
+// chuacw
 {$WEAKLINKRTTI ON}
 
 interface
-uses MPEvent, daemon;
+uses Mercury.POP3.Events, Mercury.Daemon;
 
-function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
+function startup(m: PM_INTERFACE; var flags: UINT_32; Name,
   param: PAnsiChar): Smallint; cdecl; export;
 
 {$IF DEFINED(CLOSEDOWN)}
@@ -15,7 +16,8 @@ function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
 {$ENDIF}
 
 implementation
-uses System.SysUtils, System.Generics.Collections, System.DateUtils, System.AnsiStrings;
+uses System.SysUtils, System.Generics.Collections, System.DateUtils,
+  System.AnsiStrings, Mercury.Helpers;
 
 const
   MinConnectTime = 70;
@@ -24,30 +26,17 @@ type
   TIPAddress = AnsiString;
 
 var
-  ModuleName: AnsiString = '';
-  mi: M_INTERFACE;
   LastConnectionTime: TDictionary<TIPAddress, TDateTime> = nil;
   LastUserPassCount: TDictionary<TIPAddress, Integer> = nil;
 
-procedure Log(const LogMsg: AnsiString);
-var
-  LText: AnsiString;
-begin
-  LText := AnsiString(Format('%s: %s', [ModuleName, LogMsg]));
-  mi.logstring(19400, LOG_NORMAL, PAnsiChar(LText));
-end;
-
-procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString);
-var
-  Text: AnsiString;
-begin
-  Text := AnsiString(Format('%s last connection: %s.', [IPAddress, LDateTime]));
-  Log(Text);
-end;
-
-function POP3EventHandler(module: UINT_32; event: UINT_32;
-  edata: Pointer; cdata: Pointer): INT_32; cdecl;
-
+///<summary>Blacklist a connection if its LastConnection time is &lt; 70 seconds.
+///<param name="module">Module ID</param>
+///<param name="event">Event ID</param>
+///<param name="edata">Points to a PMPEventBuf.</param>
+///<param name="cdata">custom data provided during registration of this handler.</param>
+///</summary>
+function POP3EventHandler(ModuleID: UINT_32; EventID: UINT_32;
+  EventData: Pointer; CustomData: Pointer): INT_32; cdecl;
 var
   IPAddress: AnsiString;
   pms: PMPEventBuf;
@@ -55,7 +44,7 @@ var
 begin
   Result := 1; // Non-zero to indicate success!
   try
-    pms := PMPEventBuf(edata);
+    pms := PMPEventBuf(EventData);
     IPAddress := pms.client;
     if LastConnectionTime.ContainsKey(IPAddress) then
       begin
@@ -82,24 +71,33 @@ begin
   end;
 end;
 
-/// Increases user account associated with IP address when it
+///<summary> Increases user account associated with IP address when it
 /// sends a USER or a PASS command
 /// Since the count is reset when the login is successful,
 /// should the count be > 2, that means an authentication pass failed,
 /// and the IP address should be blacklisted
-function POP3CommandHandler(module: UINT_32; event: UINT_32;
-  edata: Pointer; cdata: Pointer): INT_32; cdecl;
+///<param name="module">Module ID</param>
+///<param name="event">Event ID</param>
+///<param name="edata">Points to a PMPEventBuf</param>
+///<param name="cdata">Any data you would like Mercury to pass you when it sends
+/// you an event notification. Anything you supply here will be passed
+/// back to you in the "cdata" parameter for your event handler. You
+/// might, for instance, wish to pass your MI_INTERFACE pointer in this
+/// field, to make it available to your event handler process.</param>
+///</summary>
+function POP3CommandHandler(ModuleID: UINT_32; EventID: UINT_32;
+  EventData: Pointer; CustomData: Pointer): INT_32; cdecl;
 var
   IPAddress, Command: AnsiString;
-  pms: PMPEventBuf;
+  PMSEvent: PMPEventBuf;
   LastCount: Integer;
   IsUserPass: Boolean;
 begin
   Result := 0; // Continue to next handler...
   try
-    pms := PMPEventBuf(edata);
-    IPAddress := pms.client;
-    Command := AnsiUpperCase(pms.inbuf);
+    PMSEvent := PMPEventBuf(EventData);
+    IPAddress := PMSEvent.client;
+    Command := AnsiUpperCase(PMSEvent.inbuf);
     Log(AnsiString(Format('Checking connection %s for USER/PASS', [IPAddress])));
     IsUserPass := (AnsiPos(AnsiString('USER'), Command)<>0) or
       (AnsiPos(AnsiString('PASS'), Command)<>0);
@@ -113,7 +111,7 @@ begin
           begin
             Log(AnsiString(Format('Connection %s blacklisted for multiple USER/PASS.', [IPAddress])));
             LastUserPassCount.Remove(IPAddress);
-            Exit(-3);
+            Exit(-3);   // -3 to blacklist!
           end;
       end else
       begin
@@ -130,16 +128,17 @@ begin
   end;
 end;
 
-// Reset user pass count when login/auth is successful
-function POP3ResetUserPassCount(module: UINT_32; event: UINT_32;
-  edata: Pointer; cdata: Pointer): INT_32; cdecl;
+///<summary>Reset user pass count when login/auth is successful
+///</summary>
+function POP3ResetUserPassCount(ModuleID: UINT_32; EventID: UINT_32;
+  EventData: Pointer; CustomData: Pointer): INT_32; cdecl;
 var
   IPAddress: AnsiString;
-  pms: PMPEventBuf;
+  PMSEvent: PMPEventBuf;
 begin
   Result := 0; // Continue to next handler...
-  pms := PMPEventBuf(edata);
-  IPAddress := pms.client;
+  PMSEvent := PMPEventBuf(EventData);
+  IPAddress := PMSEvent.client;
   if LastUserPassCount.ContainsKey(IPAddress) then
     begin
       Log(AnsiString(Format('Reset USER/PASS count for %s', [IPAddress])));
@@ -147,15 +146,19 @@ begin
     end;
 end;
 
-function startup(m: PM_INTERFACE; var flags: UINT_32; name: PAnsiChar;
-  param: PAnsiChar): Smallint;
+function RegisterPOP3EventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32; inline;
+begin
+  Result := mi.register_event_handler(MMI_MERCURYP, Event, EProc, CustomData);
+end;
+
+function startup(m: PM_INTERFACE; var flags: UINT_32; Name, Param: PAnsiChar): Smallint;
 var
   Text: string;
 begin
   mi := m^; // Copy the structure, not the pointer, as the data at the pointer will be released
   ModuleName := name;
 
-  if m.register_event_handler(MMI_MERCURYP, MPEVT_CONNECT, @POP3EventHandler, nil)=0 then
+  if RegisterPOP3EventHandler(MPEVT_CONNECT2, @POP3EventHandler, nil)=0 then
     Text := 'Failed to register Connect Handler' else
     begin
       Text := Format('Connect Handler registered successfully, Min: %d', [MinConnectTime]);
@@ -163,7 +166,7 @@ begin
     end;
   Log(AnsiString(Text));
 
-  if m.register_event_handler(MMI_MERCURYP, MPEVT_COMMAND, @POP3CommandHandler, nil)=0 then
+  if RegisterPOP3EventHandler(MPEVT_COMMAND, @POP3CommandHandler, nil)=0 then
     Text := 'Failed to register Command Handler' else
     begin
       Text := 'Command Handler registered successfully';
@@ -171,7 +174,7 @@ begin
     end;
   Log(AnsiString(Text));
 
-  if m.register_event_handler(MMI_MERCURYP, MPEVT_LOGIN, @POP3ResetUserPassCount, nil)=0 then
+  if RegisterPOP3EventHandler(MPEVT_LOGIN, @POP3ResetUserPassCount, nil)=0 then
     Text := 'Failed to register ResetUserPass Handler' else
     begin
       Text := 'ResetUserPass Handler registered successfully';
@@ -196,4 +199,6 @@ initialization
 finalization
   LastUserPassCount.Free;
   LastConnectionTime.Free;
+  LastUserPassCount := nil;
+  LastConnectionTime := nil;
 end.

@@ -1,6 +1,7 @@
-unit MPEvent;
+unit Mercury.POP3.Events;
 {.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {.$STRONGLINKTYPES OFF}
+// chuacw
 {$WEAKLINKRTTI ON}
 
 (*
@@ -128,7 +129,27 @@ const
 //  descriptions of each event and its possible responses.
 
   {$EXTERNALSYM MPEVT_CONNECT}
-  MPEVT_CONNECT                       = 1; 
+///<summary>
+/// MercuryP generates this event when it receives a connection, but
+/// before any data is read or written. The parameter is a standard
+/// MPEVENTBUF structure where "port" is the port on which the peer
+/// established the connection, and "client" is a string representation of
+/// the IP address of the connecting peer (e.g, "192.156.225.1"). When
+/// this event is generated, no other field in the MPEVENTBUF is defined.
+
+/// An event handler can return -1 or -2 to tell MercuryP to close the
+/// connection immediately without further processing. In this case, if
+/// the "outbuf" member of the EVENTBUF structure is not an empty string
+/// on return, MercuryP will write it to the socket before closing it down
+/// - it is the event handler's job to format the response correctly,
+/// including a proper RFC1939-compliant -ERR error code.
+
+/// An event handler can return -3 to tell MercuryP that it should
+/// terminate the connection, and add the peer's IP address to its
+/// internal short-term blacklist. The "outbuf" parameter is handled the
+/// same in this case as it is for a return of -1.
+///</summary>
+  MPEVT_CONNECT                       = 1;
   {$EXTERNALSYM MPEVT_CONNECT2}
   MPEVT_CONNECT2                      = 2; 
   {$EXTERNALSYM MPEVT_PROFILE}
@@ -351,35 +372,65 @@ type
   PMPEventBuf = ^TMPEventBuf;
   {$EXTERNALSYM MPEVENTBUF}
   MPEVENTBUF = packed record
+    ///<summary>Version of this structure</summary>
     sversion: UINT_32;                    //  Version of this structure
+    ///<summary>Total length in bytes of this structure</summary>
     ssize: UINT_32;                       //  Total length in bytes of this structure
+    ///<summary>Daemons *must not* alter this field.</summary>
     reserved: UINT_32;                    //  Daemons *must not* alter this field.
+    ///<summary>A block of Daemon-callable utility functions</summary>
     functions: PMP_EBFNS;                 //  A block of Daemon-callable utility functions
+    ///<summary>Current state machine transaction state</summary>
     state: INT_32;                        //  Current state machine transaction state
+    ///<summary>State information about the transaction</summary>
     flags: UINT_32;                       //  State information about the transaction
+    ///<summary>Access control flags for the transaction</summary>
     aclflags: UINT_32;                    //  Access control flags for the transaction
+    ///<summary>Time of initial connection (actually a time_t)</summary>
     start_time: INT_32;                   //  Time of initial connection (actually a time_t)
+    ///<summary>Transaction ID - unique during this session</summary>
     trans_id: UINT_32;                    //  Transaction ID - unique during this session
+    ///<summary>The port on which the peer is connected</summary>
     port: INT_32;                         //  The port on which the peer is connected
+    ///<summary>The peer's IP address in string form</summary>
     client: PAnsiChar;                    //  The peer's IP address in string form
+    ///<summary>User name or identity of authenticated user</summary>
     uic: array[0..255] of AnsiChar;       //  User name or identity of authenticated user
+    ///<summary>User's mailbox directory</summary>
     mailbox: array[0..255] of AnsiChar;   //  User's mailbox directory
+    ///<summary>User-profile control word.</summary>
     ucw: UINT_32;                         //  User-profile control word.
+    ///<summary>Total size of presented maildrop contents</summary>
     tsize: UINT_32;                       //  Total size of presented maildrop contents
+    ///<summary>Number of messages in presented maildrop</summary>
     count: UINT_32;                       //  Number of messages in presented maildrop
+    ///<summary>The maximum allocated length of "inbuf"</summary>
     inbuflen: INT_32;                     //  The maximum allocated length of "inbuf"
+    ///<summary>Event-specific</summary>
     inbuf: PAnsiChar;                     //  Event-specific
+    ///<summary>Event-specific</summary>
     outbuf: array[0..1023] of AnsiChar;   //  Event-specific
+    ///<summary>Event-specific integer parameter</summary>
     iparam: UINT_32;                      //  Event-specific integer parameter
+    ///<summary>Event-specific C string parameter</summary>
     sparam: PAnsiChar;                    //  Event-specific C string parameter
+    ///<summary>Session-specific user-profile control word.</summary>
     sucw: UINT_32;                        //  Session-specific user-profile control word.
+    ///<summary>Allocated size of following "*_test" fields</summary>
     test_size: UINT_32;                   //  Allocated size of following "*_test" fields
+    ///<summary>User's login-time "From" test if any</summary>
     from_test: PAnsiChar;                 //  User's login-time "From" test if any
+    ///<summary>User's login-time "Omit" test if any</summary>
     omit_test: PAnsiChar;                 //  User's login-time "Omit" test if any
+    ///<summary>User's login-time "Show" test if any</summary>
     show_test: PAnsiChar;                 //  User's login-time "Show" test if any
+    ///<summary>User's login-time "Subject" test if any</summary>
     subject_test: PAnsiChar;              //  User's login-time "Show" test if any
+    ///<summary>User's login-time "Since" test if any (8 bytes)</summary>
     since: PByte;                         //  User's login-time "Since" test if any (8 bytes)
+    ///<summary>User's login-time "Since2" test if any</summary>
     since2: UINT_32;                      //  User's login-time "Since2" test if any
+    ///<summary>APOP challenge string issued at connect time</summary>
     apop_challenge: PAnsiChar;           //  APOP challenge string issued at connect time
   end;
   TMPEventBuf = MPEVENTBUF;

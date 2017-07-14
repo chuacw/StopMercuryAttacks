@@ -1,4 +1,5 @@
-unit MSEvent;
+// chuacw
+unit Mercury.SMTP.Events;
 {$WARNINGS OFF}
 {$WEAKLINKRTTI ON}
 
@@ -59,19 +60,19 @@ type
   {$EXTERNALSYM UINT_16}
   UINT_16 = Word;
   TUint16 = Word;
-////typedef short           INT_16;
+// typedef short           INT_16;
 
   PInt16 = ^TInt16;
   {$EXTERNALSYM INT_16}
   INT_16 = Smallint;
   TInt16 = Smallint;
-////typedef unsigned long   UINT_32;
+// typedef unsigned long   UINT_32;
 
   PUint32 = ^TUint32;
   {$EXTERNALSYM UINT_32}
   UINT_32 = Longword;
   TUint32 = Longword;
-////typedef long            INT_32;
+// typedef long            INT_32;
 
   PInt32 = ^TInt32; 
   {$EXTERNALSYM INT_32} 
@@ -87,17 +88,122 @@ const
 //  descriptions of each event and its possible responses.
 
   {$EXTERNALSYM MSEVT_CONNECT}
+///<summary>MercuryS generates this event when it receives a connection, but
+/// before any data is read or written. The parameter is a standard
+/// EVENTBUF structure where "port" is the port on which the peer
+/// established the connection, and "client" is a string representation of
+/// the IP address of the connecting peer (e.g, "192.156.225.1"). When
+/// this event is generated, no other field in the MSEVENTBUF is defined.
+
+/// An event handler can return -2 to tell MercuryS to close the
+/// connection immediately without further processing. In this case, if
+/// the "outbuf" member of the EVENTBUF structure is not an empty string
+/// on return, MercuryS will write it to the socket before closing it down
+/// - it is the event handler's job to format the response correctly,
+/// including a proper RFC2821 400- or 500- series error code.
+
+/// An event handler can return -3 to tell MercuryS that it should
+/// terminate the connection, and add the peer's IP address to its
+/// internal short-term blacklist. The "outbuf" parameter is handled the
+/// same in this case as it is for a return of -1.
+/// An event handler can return 1 to tell MercuryS that it should suppress
+///   all transaction-level filtering rules of all types for this connection.
+///</summary>
   MSEVT_CONNECT                       = 1;
   {$EXTERNALSYM MSEVT_CONNECT2}
-  MSEVT_CONNECT2                      = 13; 
+/// <summary>
+/// MercuryS generates this event when it receives a connection, before
+/// any data is read or written, but after it has completed its own access
+/// control tests (specifically blacklist and ACL checking). The parameter
+/// is a standard EVENTBUF structure where "port" is the port on which the
+/// peer established the connection, and "client" is a string
+/// representation of the IP address of the connecting peer (e.g,
+/// "192.156.225.1"). When this event is generated, no other field in the
+/// MSEVENTBUF is defined.
+
+/// An event handler can return -2 to tell MercuryS to close the
+/// connection immediately without further processing. In this case, if
+/// the "outbuf" member of the EVENTBUF structure is not an empty string
+/// on return, MercuryS will write it to the socket before closing it down
+/// - it is the event handler's job to format the response correctly,
+/// including a proper RFC2821 400- or 500- series error code.
+
+/// An event handler can return -3 to tell MercuryS that it should
+/// terminate the connection, and add the peer's IP address to its
+/// internal short-term blacklist. The "outbuf" parameter is handled the
+/// same in this case as it is for a return of -1.
+
+/// An event handler can return 1 to tell MercuryS that it should suppress
+/// all transaction-level filtering rules of all types for this connection.
+/// </summary>
+  MSEVT_CONNECT2                      = 13;
   {$EXTERNALSYM MSEVT_HELO}
-  MSEVT_HELO                          = 2; 
+///<summary>
+///    MercuryS generates this event when it receives a HELO or EHLO command
+///    from the connected peer. The "inbuf" field in the EVENTBUF parameter
+///    contains the unmodified HELO/EHLO command exactly as it was received.
+///    The event handler can modify this field if it wishes - the event is
+///    generated before MercuryS actually examines the parameter itself, so
+///    if the handler modifies the parameter, MercuryS will process the
+///    modified version.
+///
+///    An event handler can return -2 to tell MercuryS to fail the command
+///    and close the connection immediately without further processing. In
+///    this case, if the "outbuf" member of the EVENTBUF structure is not an
+///    empty string on return, MercuryS will write it to the socket before
+///    closing it down - it is the event handler's job to format the response
+///    correctly, including a proper RFC2821 400- or 500- series error code.
+///
+///    An event handler can return -3 to tell MercuryS that it should fail
+///    the command, terminate the connection, and add the peer's IP address
+///    to its internal short-term blacklist. The "outbuf" parameter is
+///    handled the same in this case as it is for returns of -1 or -2.
+///
+///    An event handler can return 1 to tell MercuryS that it should suppress
+///    all transaction-level HELO filtering rules for this connection.
+///</summary>
+  MSEVT_HELO                          = 2;
   {$EXTERNALSYM MSEVT_ESMTP_AUTH}
-  MSEVT_ESMTP_AUTH                    = 11; 
+  MSEVT_ESMTP_AUTH                    = 11;
   {$EXTERNALSYM MSEVT_ESMTP_END}
-  MSEVT_ESMTP_END                     = 12; 
+  MSEVT_ESMTP_END                     = 12;
   {$EXTERNALSYM MSEVT_AUTH}
-  MSEVT_AUTH                          = 10; 
+///<summary>
+/// This event is generated when MercuryS receives an AUTH command from
+/// the connected peer. The "inbuf" field in the EVENTBUF parameter
+/// contains the unmodified AUTH command exactly as it was received. The
+/// event handler can modify this field if it wishes - the event is
+/// generated before MercuryS actually examines the parameter itself, so
+/// if the handler modifies the parameter, MercuryS will process the
+/// modified version.
+
+/// An event handler can return 1 to MercuryS to indicate that the
+/// connection has been successfully authenticated. In this instance, if
+/// "outbuf" is not zero-length, it will be used as the success response
+/// to the command, otherwise, MercuryS will revert to its OPEN state and
+/// continue processing.
+
+/// An event handler can return -1 to tell MercuryS fail the command. In
+/// this case, if the "outbuf" member of the EVENTBUF structure is not an
+/// empty string on return, MercuryS will write it to the socket - it is
+/// the event handler's job to format the response correctly, including a
+/// proper RFC2821 400- or 500- series error code. If the "outbuf" member
+/// is zero-length, MercuryS will generate a standard 500-series error
+/// response. This response does not terminate the connection - the peer
+/// can, if it wishes, attempt to issue other commands.
+
+/// An event handler can return -2 to tell MercuryS that it should both
+/// fail the command, and terminate the connection. As with the -1 return,
+/// the "outbuf" member of the parameter can be set to an error message to
+/// return to the peer, with MercuryS generating a reasonable default if
+/// it is zero-length.
+
+/// An event handler can return -3 to tell MercuryS that it should fail
+/// the command, terminate the connection, and add the peer's IP address
+/// to its internal short-term blacklist. The "outbuf" parameter is
+/// handled the same in this case as it is for returns of -1 or -2.
+///</summary>
+  MSEVT_AUTH                          = 10;
   {$EXTERNALSYM MSEVT_COMMAND}
   MSEVT_COMMAND                       = 14;
   {$EXTERNALSYM MSEVT_RSET}
@@ -269,27 +375,64 @@ type
 
   PMSEventBuf = ^TMSEventBuf;
   {$EXTERNALSYM MSEVENTBUF} 
-  MSEVENTBUF = packed record 
-    sversion: UINT_32;                    //  Version of this structure 
+  ///<summary>Event Buffer</summary>
+  MSEVENTBUF = packed record
+    ///<summary>Version of this structure</summary>
+    sversion: UINT_32;                    //  Version of this structure
+    ///<summary>Total length in bytes of this structure</summary>
     ssize: UINT_32;                       //  Total length in bytes of this structure
-    reserved: UINT_32;                    //  Daemons *must not* alter this field. 
-    functions: PEBFNS;                    //  A block of Daemon-callable utility functions 
-    flags: UINT_32;                       //  State information about the transaction 
-    start_time: INT_32;                   //  Time of initial connection (actually a time_t) 
-    trans_id: UINT_32;                    //  Transaction ID - unique during this session 
-    port: INT_32;                         //  The port on which the peer is connected 
-    msize: INT_32;                        //  The declared size of the message (0 for none) 
-    client: PAnsiChar;                    //  The peer's IP address in string form 
-    rplen: INT_32;                        //  Maximum allocated length of "return_path" 
-    return_path: PAnsiChar;               //  Address specified in MAIL FROM: command 
-    rcpts: INT_32;                        //  Total RCPTs accepted so far in this session 
-    bad_rcpts: INT_32;                    //  Total RCPTs failed so far in this session 
+    ///<summary>Reserved - Daemons *must not* alter this field.</summary>
+    reserved: UINT_32;                    //  Daemons *must not* alter this field.
+    ///<summary>A block of Daemon-callable utility functions</summary>
+    functions: PEBFNS;                    //  A block of Daemon-callable utility functions
+    ///<summary>State information about the transaction. The "flags" field is a bitmap that records certain information about the
+    /// transaction in progress - for instance, whether or not the peer has issued a successful AUTH command. Unless explicitly noted below, event
+    /// handlers should generally regard this field as read-only. The bits in
+    /// "flags" can be isolated using the MSEF_* constants declared in MSEVENT.</summary>
+    flags: UINT_32;                       //  State information about the transaction
+    ///<summary>Time of initial connection (actually a time_t)</summary>
+    start_time: INT_32;                   //  Time of initial connection (actually a time_t)
+    ///<summary>Transaction ID - unique during this session </summary>
+    trans_id: UINT_32;                    //  Transaction ID - unique during this session
+    ///<summary>The port on which the peer is connected</summary>
+    port: INT_32;                         //  The port on which the peer is connected
+    ///<summary>The declared size of the message (0 for none). The "msize" field is typically not filled out until the MSEVT_MAIL_OK
+    /// event at the earliest, and may remain zero (no value) until after the
+    /// MSEVT_DATA2 event.</summary>
+    msize: INT_32;                        //  The declared size of the message (0 for none)
+    ///<summary>The peer's IP address in string form</summary>
+    client: PAnsiChar;                    //  The peer's IP address in string form
+    ///<summary>Maximum allocated length of "return_path"</summary>
+    rplen: INT_32;                        //  Maximum allocated length of "return_path"
+    ///<summary>Address specified in MAIL FROM: command. "return-path" will contain the address parameter from a successful SMTP
+    ///MAIL FROM command after that command has been processed - event handlers
+    /// can refer to it from that point on, but should not usually attempt to
+    ///modify it.</summary>
+    return_path: PAnsiChar;               //  Address specified in MAIL FROM: command
+    ///<summary>Total RCPTs accepted so far in this session</summary>
+    rcpts: INT_32;                        //  Total RCPTs accepted so far in this session
+    ///<summary>Total RCPTs failed so far in this session</summary>
+    bad_rcpts: INT_32;                    //  Total RCPTs failed so far in this session
+    ///<summary>Total number of attempted relaying operations</summary>
     relay_attempts: INT_32;               //  Total number of attempted relaying operations
-    discard_reason: INT_32;               //  If "flags  MSEF_DATA_REJECTION", the reason code 
-    inbuflen: INT_32;                     //  The maximum allocated length of "inbuf" 
-    inbuf: PAnsiChar;                     //  Event-specific 
-    outbuf: array[0..1023] of AnsiChar;   //  Event-specific 
-    bad_cmds: INT_32;                    //  1.03: Total failed commands this session 
+    ///<summary>If "flags  MSEF_DATA_REJECTION", the reason code</summary>
+    discard_reason: INT_32;               //  If "flags  MSEF_DATA_REJECTION", the reason code
+    ///<summary>The maximum allocated length of "inbuf"</summary>
+    inbuflen: INT_32;                     //  The maximum allocated length of "inbuf"
+    ///<summary>Event-specific. The "inbuf" field typically contains a pointer to the data on which
+    /// MercuryS is basing the notification; in some cases, it may be modifiable,
+    /// but not in all - see the documentation associated with the events for
+    /// more information on this. If "inbuf" is marked as modifiable for any
+    /// given event, the event handler *must* respect the value of "inbuflen",
+    /// and *must not* write more than that many bytes of data into the field. It
+    /// is also the event handler's obligation to ensure that "inbuf" retains a
+    /// valid NUL terminator if it is modified.</summary>
+    inbuf: PAnsiChar;                     //  Event-specific
+    ///<summary>Event-specific. The "outbuf" field is provided to allow event handlers to provide
+    /// feedback or other return data to MercuryS.</summary>
+    outbuf: array[0..1023] of AnsiChar;   //  Event-specific
+    ///<summary>1.03: Total failed commands this session</summary>
+    bad_cmds: INT_32;                    //  1.03: Total failed commands this session
   end; 
   TMSEventBuf = MSEVENTBUF;
 
