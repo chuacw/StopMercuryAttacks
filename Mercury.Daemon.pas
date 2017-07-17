@@ -118,28 +118,28 @@ const
 ////  typedef unsigned char UCHAR;
 type
 
-  PUchar = ^TUchar;
+  PUChar = ^TUChar;
   {$EXTERNALSYM UCHAR}
   UCHAR = Byte;
-  TUchar = Byte;
+  TUChar = Byte;
 ////  typedef unsigned short USHORT;
 
-  PUshort = ^TUshort;
+  PUShort = ^TUShort;
   {$EXTERNALSYM USHORT}
   USHORT = Word;
-  TUshort = Word;
+  TUShort = Word;
 ////  typedef unsigned long ULONG;
 
-  PUlong = ^TUlong;
+  PULong = ^TULong;
   {$EXTERNALSYM ULONG}
   ULONG = Longword;
-  TUlong = Longword;
+  TULong = Longword;
 ////  typedef unsigned short UINT_16;
 
-  PUint16 = ^TUint16;
+  PUInt16 = ^TUInt16;
   {$EXTERNALSYM UINT_16}
   UINT_16 = Word;
-  TUint16 = Word;
+  TUInt16 = Word;
 ////  typedef short INT_16;
 
   PInt16 = ^TInt16;
@@ -148,10 +148,10 @@ type
   TInt16 = Smallint;
 ////  typedef unsigned long UINT_32;
 
-  PUint32 = ^TUint32;
+  PUInt32 = ^TUInt32;
   {$EXTERNALSYM UINT_32}
   UINT_32 = Longword;
-  TUint32 = Longword;
+  TUInt32 = Longword;
 ////  typedef long INT_32;
 
   PInt32 = ^TInt32;
@@ -164,10 +164,10 @@ type
 
 ////  typedef unsigned int UINTP;
 
-  PUintp = ^TUintp;
+  PUIntp = ^TUIntp;
   {$EXTERNALSYM UINTP}
   UINTP = Cardinal;
-  TUintp = Cardinal;
+  TUIntp = Cardinal;
 ////  typedef int INTP;
 
   PIntp = ^TIntp;
@@ -207,7 +207,7 @@ type
 ////   int laststate;    //  0 = normal, 1 = maximized, 2 = iconic.
 ////   } XSIZE;
 
-  PXsize = ^TXsize;
+  PXSize = ^TXSize;
   {$EXTERNALSYM XSIZE}
   XSIZE = packed record
     dx: Integer;
@@ -219,7 +219,7 @@ type
     wParam: WPARAM;
     laststate: Integer;             //  0 = normal, 1 = maximized, 2 = iconic.
   end;
-  TXsize = XSIZE;
+  TXSize = XSIZE;
 
 // typedef struct
 //    {
@@ -230,7 +230,7 @@ type
 //    char security;
 //    } PMPROP;
 
-  PPMprop = ^TPMProp;
+  PPMProp = ^TPMProp;
   {$EXTERNALSYM PMPROP}
   PMPROP = packed record
     auto_forward: array[0..59] of AnsiChar;
@@ -2540,7 +2540,7 @@ type
 
 // typedef void (*READ_PMPROP) (char *userid, char *server, PMPROP *p);
    {$EXTERNALSYM READ_PMPROP}
-   READ_PMPROP = function(UserID, Server: PAnsiChar; P: PPmprop): INT_16; cdecl;
+   READ_PMPROP = function(UserID, Server: PAnsiChar; P: PPMProp): INT_16; cdecl;
 
 // typedef int (*CHANGE_OWNERSHIP) (char *fname, char *host, char *newowner);
    {$EXTERNALSYM CHANGE_OWNERSHIP}
