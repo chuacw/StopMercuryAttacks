@@ -3559,7 +3559,7 @@ type
     edit_message_headers: Pointer; // EDIT_MESSAGE_HEADERS;
     ji_get_job_state: Pointer; // JI_GET_JOB_STATE;
     decode_mime_header_ex: Pointer; // DECODE_MIME_HEADER_EX;
-    register_event_handler: REGISTER_EVENT_HANDLER;
+    RegisterEventHandler: REGISTER_EVENT_HANDLER;
     deregister_event_handler: DEREGISTER_EVENT_HANDLER;
     generate_event: GENERATE_EVENT;
     ji_acquire_queue: Pointer; // JI_ACQUIRE_QUEUE;
@@ -3954,7 +3954,7 @@ type
   MAKE_PATH                = function (line, basedir, fname: PAnsiChar): PAnsiChar; cdecl;
   MAKE_BASE_PATH           = function (line: PAnsiChar; fname: PAnsiChar): PAnsiChar; cdecl;
   MAKE_EXE_PATH            = function (line: PAnsiChar; fname: PAnsiChar): PAnsiChar; cdecl;
-  LOG_EVENT                = function(base_fname: PAnsiChar; id: INT_32; &type: AnsiChar; fmt: PAnsiChar): Integer; cdecl varargs;
+  LOG_EVENT                = function (base_fname: PAnsiChar; id: INT_32; &type: AnsiChar; fmt: PAnsiChar): Integer; cdecl varargs;
   FINDNAME                 = function (fname: PAnsiChar): PAnsiChar; cdecl;
   FIND_EXTENSION           = function (fname: PAnsiChar): PAnsiChar; cdecl;
   SKIPWS                   = function (str: PAnsiChar): PAnsiChar; cdecl;

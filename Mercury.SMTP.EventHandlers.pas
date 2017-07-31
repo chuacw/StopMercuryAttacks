@@ -304,7 +304,7 @@ end;
 
 function RegisterSMTPEventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32; inline;
 begin
-  Result := mi.register_event_handler(MMI_MERCURYS, Event, EProc, CustomData);
+  Result := mi.RegisterEventHandler(MMI_MERCURYS, Event, EProc, CustomData);
 end;
 
 //function startup(m: PM_INTERFACE; var Flags: UINT_32; const Name,

@@ -1,7 +1,7 @@
 /// <summary>
 /// The purpose of this unit is to unify the SMTP and the POP startup so
 /// that there is only a single startup routine. By registering the callbacks,
-/// the idea is to provide the ability for the any registered callbacks to be called
+/// the idea is to provide the ability for any registered callbacks to be called
 /// by the startup routine.
 /// </summary>
 unit Mercury.Callbacks; experimental;
