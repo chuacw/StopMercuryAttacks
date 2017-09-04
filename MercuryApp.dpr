@@ -21,8 +21,13 @@ var
   ULine: UnicodeString;
   List: TStringList;
   Count: Integer;
+  X: string;
+  Xs: array of string;
 begin
   ReportMemoryLeaksOnShutdown := True;
+
+  for X in Xs do
+    WriteLn(X);
 
   Count := 0;
 

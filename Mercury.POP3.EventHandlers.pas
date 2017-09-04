@@ -46,6 +46,10 @@ begin
   try
     pms := PMPEventBuf(EventData);
     IPAddress := pms.client;
+
+    if Pos('192.168', IPAddress)>=0 then
+      Exit;
+
     if LastConnectionTime.ContainsKey(IPAddress) then
       begin
         LastConnectedOn := LastConnectionTime[IPAddress];
@@ -53,7 +57,7 @@ begin
         ShowLastConnectedTime(AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn)), IPAddress);
         if WithinPastSeconds(Now, LastConnectedOn, MinConnectTime) then
           begin
-            Log(AnsiString(Format('Connection %s blacklisted.', [IPAddress])));
+            Log(Format('Connection %s blacklisted.', [IPAddress]));
             Result := -3; // Blacklist!!!
           end;
 
@@ -66,7 +70,7 @@ begin
   except
     on E: Exception do
       begin
-        Log(AnsiString(E.Message));
+        Log(E.Message);
       end;
   end;
 end;
@@ -98,7 +102,7 @@ begin
     PMSEvent := PMPEventBuf(EventData);
     IPAddress := PMSEvent.client;
     Command := AnsiUpperCase(PMSEvent.inbuf);
-    Log(AnsiString(Format('Checking connection %s for USER/PASS', [IPAddress])));
+    Log(Format('Checking connection %s for USER/PASS', [IPAddress]));
     IsUserPass := (AnsiPos(AnsiString('USER'), Command)<>0) or
       (AnsiPos(AnsiString('PASS'), Command)<>0);
     if not IsUserPass then Exit;
@@ -109,7 +113,7 @@ begin
         // LDateTime := AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn));
         if LastCount>2 then
           begin
-            Log(AnsiString(Format('Connection %s blacklisted for multiple USER/PASS.', [IPAddress])));
+            Log(Format('Connection %s blacklisted for multiple USER/PASS.', [IPAddress]));
             LastUserPassCount.Remove(IPAddress);
             Exit(-3);   // -3 to blacklist!
           end;
@@ -123,7 +127,7 @@ begin
   except
     on E: Exception do
       begin
-        Log(AnsiString(E.Message));
+        Log(E.Message);
       end;
   end;
 end;
@@ -141,14 +145,14 @@ begin
   IPAddress := PMSEvent.client;
   if LastUserPassCount.ContainsKey(IPAddress) then
     begin
-      Log(AnsiString(Format('Reset USER/PASS count for %s', [IPAddress])));
+      Log(Format('Reset USER/PASS count for %s', [IPAddress]));
       LastUserPassCount.Remove(IPAddress);
     end;
 end;
 
 function RegisterPOP3EventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32; inline;
 begin
-  Result := mi.register_event_handler(MMI_MERCURYP, Event, EProc, CustomData);
+  Result := mi.RegisterEventHandler(MMI_MERCURYP, Event, EProc, CustomData);
 end;
 
 function startup(m: PM_INTERFACE; var flags: UINT_32; Name, Param: PAnsiChar): Smallint;
@@ -164,7 +168,7 @@ begin
       Text := Format('Connect Handler registered successfully, Min: %d', [MinConnectTime]);
       LastConnectionTime := TDictionary<TIPAddress, TDateTime>.Create;
     end;
-  Log(AnsiString(Text));
+  Log(Text);
 
   if RegisterPOP3EventHandler(MPEVT_COMMAND, @POP3CommandHandler, nil)=0 then
     Text := 'Failed to register Command Handler' else
@@ -172,7 +176,7 @@ begin
       Text := 'Command Handler registered successfully';
       LastUserPassCount := TDictionary<TIPAddress, Integer>.Create;
     end;
-  Log(AnsiString(Text));
+  Log(Text);
 
   if RegisterPOP3EventHandler(MPEVT_LOGIN, @POP3ResetUserPassCount, nil)=0 then
     Text := 'Failed to register ResetUserPass Handler' else
@@ -181,7 +185,7 @@ begin
       if not Assigned(LastUserPassCount) then
         LastUserPassCount := TDictionary<TIPAddress, Integer>.Create;
     end;
-  Log(AnsiString(Text));
+  Log(Text);
 
   Result := 1; // Non-zero to indicate success!
 end;

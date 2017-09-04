@@ -23,16 +23,14 @@ exports startup{$IF DEFINED(CLOSEDOWN)},
 {$IF DEFINED(DEBUG)}
 procedure DllMain(reason: Integer);
 begin
-  if reason = DLL_PROCESS_DETACH then
-    OutputDebugString('DLL PROCESS DETACH')
-  else if reason = DLL_PROCESS_ATTACH then
-    OutputDebugString('DLL PROCESS ATTACH')
-  else if reason = DLL_THREAD_ATTACH then
-    OutputDebugString('DLL THREAD ATTACH')
-  else if reason = DLL_THREAD_DETACH then
-    OutputDebugString('DLL THREAD DETACH')
+  case reason of
+    DLL_PROCESS_DETACH: OutputDebugString('DLL PROCESS DETACH');
+    DLL_PROCESS_ATTACH: OutputDebugString('DLL PROCESS ATTACH');
+    DLL_THREAD_ATTACH: OutputDebugString('DLL THREAD ATTACH');
+    DLL_THREAD_DETACH: OutputDebugString('DLL THREAD DETACH');
   else
     OutputDebugString('DllMain');
+  end;
 end;
 
 begin

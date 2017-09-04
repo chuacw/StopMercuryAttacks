@@ -15,6 +15,9 @@
         <Projects Include="MercuryApp.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="MercuryIPv6Mapper.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +62,23 @@
     <Target Name="MercuryApp:Make">
         <MSBuild Projects="MercuryApp.dproj" Targets="Make"/>
     </Target>
+    <Target Name="MercuryIPv6Mapper">
+        <MSBuild Projects="MercuryIPv6Mapper.dproj"/>
+    </Target>
+    <Target Name="MercuryIPv6Mapper:Clean">
+        <MSBuild Projects="MercuryIPv6Mapper.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MercuryIPv6Mapper:Make">
+        <MSBuild Projects="MercuryIPv6Mapper.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="StopSMTPAttacks;StopPOP3Attacks;TestSMTPMultipleAuth;MercuryApp"/>
+        <CallTarget Targets="StopSMTPAttacks;StopPOP3Attacks;TestSMTPMultipleAuth;MercuryApp;MercuryIPv6Mapper"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="StopSMTPAttacks:Clean;StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean;MercuryApp:Clean"/>
+        <CallTarget Targets="StopSMTPAttacks:Clean;StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean;MercuryApp:Clean;MercuryIPv6Mapper:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="StopSMTPAttacks:Make;StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make;MercuryApp:Make"/>
+        <CallTarget Targets="StopSMTPAttacks:Make;StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make;MercuryApp:Make;MercuryIPv6Mapper:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

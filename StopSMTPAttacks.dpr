@@ -13,7 +13,9 @@ uses
   NetFwTypeLib_TLB in '..\WindowsFirewall\NetFwTypeLib_TLB.pas',
   System.Win.Firewall in '..\WindowsFirewall\System.Win.Firewall.pas',
   Mercury.Helpers in 'Mercury.Helpers.pas',
-  Mercury.EventLog in 'Mercury.EventLog.pas';
+  Mercury.EventLog in 'Mercury.EventLog.pas',
+  SysUtils.GuardUtils in '..\Libraries\SysUtils.GuardUtils.pas',
+  Mercury.SMTP.BlackListHandler in 'Mercury.SMTP.BlackListHandler.pas';
 
 exports startup{$IF DEFINED(CLOSEDOWN)},
         closedown

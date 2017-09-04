@@ -15,7 +15,7 @@ var
 /// Controlled by Configuration -&gt; Mercury core module -&gt; Reporting -&gt; System message reporting level.
 ///<param name="LogMsg">Msg to log</param>
 ///</summary>
-procedure Log(const LogMsg: AnsiString);
+procedure Log(const LogMsg: string);
 
 procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString);
 
@@ -27,13 +27,13 @@ uses System.SysUtils;
 ///<summary>Logs the last connection from a given IP address.</summary>
 procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString);
 var
-  Text: AnsiString;
+  Text: string;
 begin
-  Text := AnsiString(Format('%s last connection: %s.', [IPAddress, LDateTime]));
+  Text := Format('%s last connection: %s.', [IPAddress, LDateTime]);
   Log(Text);
 end;
 
-procedure Log(const LogMsg: AnsiString);
+procedure Log(const LogMsg: string);
 var
   LText: AnsiString;
 begin

@@ -887,24 +887,51 @@ type
 //   {
 //   MD_ATTACHMENT, MD_INLINE
 //   };
-//
+
+ TContentDispositions = (MD_Attachment, MD_Inline);
+
 //enum     // The primary types
 //   {
 //   MP_TEXT, MP_MULTIPART, MP_MESSAGE, MP_APPLICATION,
 //   MP_IMAGE, MP_VIDEO, MP_AUDIO, MP_UNKNOWN
 //   };
-//
+
+  TPrimaryTypes = (MPText, MPMultipart, MPMessage, MPApplication, MPImage, MPVideo,
+  MPAudio, MPUnknown,
+  MP_TEXT = MPText, MP_MULTIPART = MPMultipart, MP_Message = MPMessage,
+  MP_APPLICATION = MPApplication, MP_IMAGE = MPImage, MP_Video = MPVideo, MP_AUDIO = MPAudio,
+  MP_Unknown = MPUnknown,
+  Text = MPText, Multipart = MPMultipart, Message = MPMessage,
+  Application = MPApplication, Image = MPImage, Video = MPVideo, Audio = MPAudio,
+  Unknown = MPUnknown);
+
 //enum     // TEXT subtypes
 //   {
 //   MPT_PLAIN, MPT_RICHTEXT, MPT_HTML, MPT_RTF, MPT_UNKNOWN
 //   };
-//
+
+  TTextSubtypes = (MPTPlain, MPTRichText, MPTHTML, MPTRTF, MPTUnknown,
+    MPT_PLAIN = MPTPlain, MPT_RICHTEXT = MPTRichText, MPT_HTML = MPTHTML,
+    MPT_RTF = MPTRTF, MPT_UNKNOWN = MPTUnknown,
+    Plain = MPTPlain, RichText = MPTRichText, HTML = MPTHTML, RTF = MPTRTF
+//    Unknown = MPTUnknown
+    );
+
 //enum     // MULTIPART subtypes
 //   {
 //   MPP_MIXED, MPP_ALTERNATIVE, MPP_DIGEST,
 //   MPP_PARALLEL, MPP_UNKNOWN
 //   };
-//
+
+  TMultipartSubtypes = (MPPMixed, MPPAlternative, MPPDigest, MPPParallel, MPPUnknown,
+  MPP_MIXED = MPPMixed, MPP_ALTERNATIVE = MPPAlternative, MPP_DIGEST = MPPDigest,
+  MPP_PARALLEL = MPPParallel, MPP_UNKNOWN = MPPUnknown, Mixed = MPPMixed,
+  // Alternative = MPPAlternative,
+  Digest = MPPDigest, Parallel = MPPParallel//,
+  //Unknown = MPPUnknown
+  );
+
+
 //enum     // MESSAGE subtypes
 //   {
 //   MPM_RFC822, MPM_PARTIAL, MPM_EXTERNAL_BODY, MPM_DISPNOT, MPM_UNKOWN
@@ -1604,7 +1631,7 @@ type
   These are the functions that code designed to use the interface will
   call to interact with objects.
 **********************************************************************)
-{$MESSAGE WARN 'These routines could likely be cdecl, and not stdcall!!!'}
+{.$MESSAGE WARN 'These routines could likely be cdecl, and not stdcall!!!'}
 // INT_32 (OIFCALL *OIF_NEW) (const char *name, const char *type, OIF_HANDLE *object, UINT_32 flags);
 {$EXTERNALSYM OIF_NEW}
   [Untested]
@@ -1613,24 +1640,24 @@ type
 // INT_32 OIF_DISPOSE_HANDLE (OIF_HANDLE object);
 {$EXTERNALSYM OIF_DISPOSE_HANDLE}
   [Untested]
-  OIF_DISPOSE_HANDLE = function (obj: OIF_HANDLE): INT_32; stdcall;
+  OIF_DISPOSE_HANDLE = function (obj: OIF_HANDLE): INT_32; cdecl;
 
 // INT_32 OIF_USE_HANDLE (OIF_HANDLE object);
 {$EXTERNALSYM OIF_USE_HANDLE}
   [Untested]
-  OIF_USE_HANDLE = function (obj: OIF_HANDLE): INT_32; stdcall;
+  OIF_USE_HANDLE = function (obj: OIF_HANDLE): INT_32; cdecl;
 
 // INT_32 OIF_DUPLICATE_OBJECT (OIF_HANDLE object, OIF_HANDLE *dup_object);
 
 {$EXTERNALSYM OIF_DUPLICATE_OBJECT}
   [Untested]
-  OIF_DUPLICATE_OBJECT = function (obj: OIF_HANDLE; var dup_object: OIF_HANDLE): INT_32; stdcall;
+  OIF_DUPLICATE_OBJECT = function (obj: OIF_HANDLE; var dup_object: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OIF_COMPARE (OIF_HANDLE object1, OIF_HANDLE object2, const char *aname, INT_32 *result);
 
 {$EXTERNALSYM OIF_COMPARE}
   [Untested]
-  OIF_COMPARE = function (object1: OIF_HANDLE; object2: OIF_HANDLE; aname: PAnsiChar; var result: INT_32): INT_32; stdcall;
+  OIF_COMPARE = function (object1: OIF_HANDLE; object2: OIF_HANDLE; aname: PAnsiChar; var result: INT_32): INT_32; cdecl;
 
 ////INT_32 OIF_COMPARE_STR (OIF_HANDLE object1, OIF_HANDLE object2,
 ////   const char *aname, UINT_32 flags, INT_32 *result);
@@ -1638,44 +1665,44 @@ type
 {$EXTERNALSYM OIF_COMPARE_STR}
   [Untested]
   OIF_COMPARE_STR = function (object1: OIF_HANDLE; object2: OIF_HANDLE;
-  aname: PAnsiChar; flags: UINT_32; var result: INT_32): INT_32; stdcall;
+  aname: PAnsiChar; flags: UINT_32; var result: INT_32): INT_32; cdecl;
 
 ////INT_32 OIF_HAS_TYPE (OIF_HANDLE object, const char *otype);
 
 {$EXTERNALSYM OIF_HAS_TYPE}
   [Untested]
-  OIF_HAS_TYPE = function (obj: OIF_HANDLE; otype: PAnsiChar): INT_32; stdcall;
+  OIF_HAS_TYPE = function (obj: OIF_HANDLE; otype: PAnsiChar): INT_32; cdecl;
 
 ////INT_32 OIF_LOCK (OIF_HANDLE object);
 
 {$EXTERNALSYM OIF_LOCK}
   [Untested]
-  OIF_LOCK = function (obj: OIF_HANDLE): INT_32; stdcall;
+  OIF_LOCK = function (obj: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OIF_UNLOCK (OIF_HANDLE object);
 
 {$EXTERNALSYM OIF_UNLOCK}
   [Untested]
-  OIF_UNLOCK = function (obj: OIF_HANDLE): INT_32; stdcall;
+  OIF_UNLOCK = function (obj: OIF_HANDLE): INT_32; cdecl;
 
 
 ////INT_32 OIF_GET_ATTRIBUTE (OIF_HANDLE object, const char *aname, void *buffer, UINT_32 buflen);
 
 {$EXTERNALSYM OIF_GET_ATTRIBUTE}
   [Untested]
-  OIF_GET_ATTRIBUTE = function (obj: OIF_HANDLE; aname: PAnsiChar; buffer: Pointer; buflen: UINT_32): INT_32; stdcall;
+  OIF_GET_ATTRIBUTE = function (obj: OIF_HANDLE; aname: PAnsiChar; buffer: Pointer; buflen: UINT_32): INT_32; cdecl;
 
 ////  INT_32 OIF_GET_ATTRIBUTE_INFO (OIF_HANDLE object, const char *aname, OIF_ATTRINFO *oia);
 
 {$EXTERNALSYM OIF_GET_ATTRIBUTE_INFO}
   [Untested]
-  OIF_GET_ATTRIBUTE_INFO = function (obj: OIF_HANDLE; aname: PAnsiChar; var oia: OIF_ATTRINFO): INT_32; stdcall;
+  OIF_GET_ATTRIBUTE_INFO = function (obj: OIF_HANDLE; aname: PAnsiChar; var oia: OIF_ATTRINFO): INT_32; cdecl;
 
 ////INT_32 OIF_SET_ATTRIBUTE (OIF_HANDLE object, const char *aname, void *buffer, UINT_32 buflen);
 
 {$EXTERNALSYM OIF_SET_ATTRIBUTE}
   [Untested]
-  OIF_SET_ATTRIBUTE = function (obj: OIF_HANDLE; aname: PAnsiChar; buffer: Pointer; buflen: UINT_32): INT_32; stdcall;
+  OIF_SET_ATTRIBUTE = function (obj: OIF_HANDLE; aname: PAnsiChar; buffer: Pointer; buflen: UINT_32): INT_32; cdecl;
 
 
 ////INT_32 OIF_DO_METHOD (OIF_HANDLE object, const char *mname,
@@ -1684,34 +1711,34 @@ type
 {$EXTERNALSYM OIF_DO_METHOD}
   [Untested]
   OIF_DO_METHOD = function (obj: OIF_HANDLE; mname: PAnsiChar;
-  inbuf: Pointer; iblen: UINT_32; outbuf: Pointer; oblen: UINT_32): INT_32; stdcall;
+  inbuf: Pointer; iblen: UINT_32; outbuf: Pointer; oblen: UINT_32): INT_32; cdecl;
 
 
 ////INT_32 OIF_SCAN_FIRST (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OIF_SCAN_FIRST}
   [Untested]
-  OIF_SCAN_FIRST = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_SCAN_FIRST = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_SCAN_LAST (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OIF_SCAN_LAST}
-  OIF_SCAN_LAST = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_SCAN_LAST = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_SCAN_NEXT (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OIF_SCAN_NEXT}
-  OIF_SCAN_NEXT = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_SCAN_NEXT = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_SCAN_PREV (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OIF_SCAN_PREV}
-  OIF_SCAN_PREV = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_SCAN_PREV = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_END_SCAN (OIF_HANDLE container, UINTP *ref);
 
 {$EXTERNALSYM OIF_END_SCAN}
-  OIF_END_SCAN = function (container: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_END_SCAN = function (container: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 
 ////INT_32 OIF_SEARCH_FIRST (OIF_HANDLE container, const char *expression,
@@ -1719,52 +1746,52 @@ type
 
 {$EXTERNALSYM OIF_SEARCH_FIRST}
   OIF_SEARCH_FIRST = function (container: OIF_HANDLE; expression: PAnsiChar;
-  explen: UINT_32; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  explen: UINT_32; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_SEARCH_NEXT (OIF_HANDLE container, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OIF_SEARCH_NEXT}
-  OIF_SEARCH_NEXT = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_SEARCH_NEXT = function (container: OIF_HANDLE; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_END_SEARCH (OIF_HANDLE container, UINTP *ref);
 
 {$EXTERNALSYM OIF_END_SEARCH}
-  OIF_END_SEARCH = function (container: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OIF_END_SEARCH = function (container: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_ADD (OIF_HANDLE container, const char *name, const char *type,
 ////   OIF_HANDLE *new_object, UINT_32 flags);
 
 {$EXTERNALSYM OIF_ADD}
   OIF_ADD = function (container: OIF_HANDLE; name: PAnsiChar; &type: PAnsiChar;
-  var new_object: OIF_HANDLE; flags: UINT_32): INT_32; stdcall;
+  var new_object: OIF_HANDLE; flags: UINT_32): INT_32; cdecl;
 
 ////INT_32 OIF_ADDTO (OIF_HANDLE container, OIF_HANDLE object,
 ////   OIF_HANDLE *new_object);
 
 {$EXTERNALSYM OIF_ADDTO}
   OIF_ADDTO = function (container: OIF_HANDLE; obj: OIF_HANDLE;
-  var new_object: OIF_HANDLE): INT_32; stdcall;
+  var new_object: OIF_HANDLE): INT_32; cdecl;
 
 
 ////INT_32 OIF_DELETE (OIF_HANDLE object);
 
 {$EXTERNALSYM OIF_DELETE}
-  OIF_DELETE = function (obj: OIF_HANDLE): INT_32; stdcall;
+  OIF_DELETE = function (obj: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OIF_CHANGE (OIF_HANDLE object, OIF_HANDLE *change_object);
 
 {$EXTERNALSYM OIF_CHANGE}
-  OIF_CHANGE = function (obj: OIF_HANDLE; var change_object: OIF_HANDLE): INT_32; stdcall;
+  OIF_CHANGE = function (obj: OIF_HANDLE; var change_object: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OIF_COMMIT_CHANGES (OIF_HANDLE object, OIF_HANDLE change_object);
 
 {$EXTERNALSYM OIF_COMMIT_CHANGES}
-  OIF_COMMIT_CHANGES = function (obj: OIF_HANDLE; change_object: OIF_HANDLE): INT_32; stdcall;
+  OIF_COMMIT_CHANGES = function (obj: OIF_HANDLE; change_object: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OIF_CANCEL_CHANGES (OIF_HANDLE object, OIF_HANDLE change_object);
 
 {$EXTERNALSYM OIF_CANCEL_CHANGES}
-  OIF_CANCEL_CHANGES = function (obj: OIF_HANDLE; change_object: OIF_HANDLE): INT_32; stdcall;
+  OIF_CANCEL_CHANGES = function (obj: OIF_HANDLE; change_object: OIF_HANDLE): INT_32; cdecl;
 
 
 (**********************************************************************
@@ -1779,55 +1806,55 @@ type
 ////INT_32 OII_NEW (const char *name, const char *type, OIF_HANDLE *object, UINT_32 flags);
 
 {$EXTERNALSYM OII_NEW}
-  OII_NEW = function (name: PAnsiChar; &type: PAnsiChar; var obj: OIF_HANDLE; flags: UINT_32): INT_32; stdcall;
+  OII_NEW = function (name: PAnsiChar; &type: PAnsiChar; var obj: OIF_HANDLE; flags: UINT_32): INT_32; cdecl;
   
 ////INT_32 OII_DISPOSE (OIF_HANDLE object, UINTP objdata);
 
 {$EXTERNALSYM OII_DISPOSE}
-  OII_DISPOSE = function (obj: OIF_HANDLE; objdata: UINTP): INT_32; stdcall;
+  OII_DISPOSE = function (obj: OIF_HANDLE; objdata: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_DUPLICATE_OBJECT (OIF_HANDLE object, UINTP objdata, OIF_HANDLE *dup_object);
 
 {$EXTERNALSYM OII_DUPLICATE_OBJECT}
-  OII_DUPLICATE_OBJECT = function (obj: OIF_HANDLE; objdata: UINTP; var dup_object: OIF_HANDLE): INT_32; stdcall;
+  OII_DUPLICATE_OBJECT = function (obj: OIF_HANDLE; objdata: UINTP; var dup_object: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OII_COMPARE (OIF_HANDLE object1, UINTP o1data,
 ////   OIF_HANDLE object2, UINTP o2data, const char *aname, INT_32 *result);
 
 {$EXTERNALSYM OII_COMPARE}
   OII_COMPARE = function (object1: OIF_HANDLE; o1data: UINTP;
-  object2: OIF_HANDLE; o2data: UINTP; aname: PAnsiChar; var result: INT_32): INT_32; stdcall;
+  object2: OIF_HANDLE; o2data: UINTP; aname: PAnsiChar; var result: INT_32): INT_32; cdecl;
 
 ////INT_32 OII_LOCK (OIF_HANDLE object, UINTP objdata);
 
 {$EXTERNALSYM OII_LOCK}
-  OII_LOCK = function (obj: OIF_HANDLE; objdata: UINTP): INT_32; stdcall;
+  OII_LOCK = function (obj: OIF_HANDLE; objdata: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_UNLOCK (OIF_HANDLE object, UINTP objdata);
 
 {$EXTERNALSYM OII_UNLOCK}
-  OII_UNLOCK = function (obj: OIF_HANDLE; objdata: UINTP): INT_32; stdcall;
+  OII_UNLOCK = function (obj: OIF_HANDLE; objdata: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_GET_ATTRIBUTE (OIF_HANDLE object, UINTP objdata, const char *aname,
 ////   void *buffer, UINT_32 buflen);
 
 {$EXTERNALSYM OII_GET_ATTRIBUTE}
   OII_GET_ATTRIBUTE = function (obj: OIF_HANDLE; objdata: UINTP; aname: PAnsiChar;
-  buffer: Pointer; buflen: UINT_32): INT_32; stdcall;
+  buffer: Pointer; buflen: UINT_32): INT_32; cdecl;
 
 ////INT_32 OII_GET_ATTRIBUTE_INFO (OIF_HANDLE object, UINTP objdata,
 ////   const char *aname, OIF_ATTRINFO *oia);
 
 {$EXTERNALSYM OII_GET_ATTRIBUTE_INFO}
   OII_GET_ATTRIBUTE_INFO = function (obj: OIF_HANDLE; objdata: UINTP;
-  aname: PAnsiChar; var oia: OIF_ATTRINFO): INT_32; stdcall;
+  aname: PAnsiChar; var oia: OIF_ATTRINFO): INT_32; cdecl;
 
 ////INT_32 OII_SET_ATTRIBUTE (OIF_HANDLE object, UINTP objdata, const char *aname,
 ////   void *buffer, UINT_32 buflen);
 
 {$EXTERNALSYM OII_SET_ATTRIBUTE}
   OII_SET_ATTRIBUTE = function (obj: OIF_HANDLE; objdata: UINTP; aname: PAnsiChar;
-  buffer: Pointer; buflen: UINT_32): INT_32; stdcall;
+  buffer: Pointer; buflen: UINT_32): INT_32; cdecl;
 
 
 ////INT_32 OII_DO_METHOD (OIF_HANDLE object, UINTP objdata, const char *mname,
@@ -1835,49 +1862,49 @@ type
 
 {$EXTERNALSYM OII_DO_METHOD}
   OII_DO_METHOD = function (obj: OIF_HANDLE; objdata: UINTP; mname: PAnsiChar;
-  inbuf: Pointer; iblen: UINT_32; outbuf: Pointer; oblen: UINT_32): INT_32; stdcall;
+  inbuf: Pointer; iblen: UINT_32; outbuf: Pointer; oblen: UINT_32): INT_32; cdecl;
 
 ////INT_32 OII_SCAN_FIRST (OIF_HANDLE container, UINTP cdata, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OII_SCAN_FIRST}
-  OII_SCAN_FIRST = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OII_SCAN_FIRST = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_SCAN_LAST (OIF_HANDLE container, UINTP cdata, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OII_SCAN_LAST}
-  OII_SCAN_LAST = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OII_SCAN_LAST = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_SCAN_NEXT (OIF_HANDLE container, UINTP cdata, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OII_SCAN_NEXT}
-  OII_SCAN_NEXT = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OII_SCAN_NEXT = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_SCAN_PREV (OIF_HANDLE container, UINTP cdata, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OII_SCAN_PREV}
-  OII_SCAN_PREV = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OII_SCAN_PREV = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_END_SCAN (OIF_HANDLE container, UINTP cdata, UINTP *ref);
 
 {$EXTERNALSYM OII_END_SCAN}
-  OII_END_SCAN = function (container: OIF_HANDLE; cdata: UINTP; var ref: UINTP): INT_32; stdcall;
+  OII_END_SCAN = function (container: OIF_HANDLE; cdata: UINTP; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_SEARCH_FIRST (OIF_HANDLE container, UINTP cdata,
 ////   const char *expression, UINT_32 explen, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OII_SEARCH_FIRST}
   OII_SEARCH_FIRST =function (container: OIF_HANDLE; cdata: UINTP;
-  expression: PAnsiChar; explen: UINT_32; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  expression: PAnsiChar; explen: UINT_32; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_SEARCH_NEXT (OIF_HANDLE container, UINTP cdata, OIF_HANDLE *object, UINTP *ref);
 
 {$EXTERNALSYM OII_SEARCH_NEXT}
-  OII_SEARCH_NEXT = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; stdcall;
+  OII_SEARCH_NEXT = function (container: OIF_HANDLE; cdata: UINTP; var obj: OIF_HANDLE; var ref: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_END_SEARCH (OIF_HANDLE container, UINTP cdata, UINTP *ref);
 
 {$EXTERNALSYM OII_END_SEARCH}
-  OII_END_SEARCH = function (container: OIF_HANDLE; cdata: UINTP; var ref: UINTP): INT_32; stdcall;
+  OII_END_SEARCH = function (container: OIF_HANDLE; cdata: UINTP; var ref: UINTP): INT_32; cdecl;
 
 
 ////INT_32 OII_ADD (OIF_HANDLE container, UINTP cdata, const char *name,
@@ -1885,46 +1912,46 @@ type
 
 {$EXTERNALSYM OII_ADD}
   OII_ADD = function (container: OIF_HANDLE; cdata: UINTP; name: PAnsiChar;
-  &type: PAnsiChar; var new_object: OIF_HANDLE; flags: UINT_32): INT_32; stdcall;
+  &type: PAnsiChar; var new_object: OIF_HANDLE; flags: UINT_32): INT_32; cdecl;
 
 ////INT_32 OII_ADDTO (OIF_HANDLE container, UINTP cdata,
 ////   OIF_HANDLE object, UINTP odata, OIF_HANDLE *new_object);
 
 {$EXTERNALSYM OII_ADDTO}
   OII_ADDTO = function (container: OIF_HANDLE; cdata: UINTP;
-  obj: OIF_HANDLE; odata: UINTP; var new_object: OIF_HANDLE): INT_32; stdcall;
+  obj: OIF_HANDLE; odata: UINTP; var new_object: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OII_DELETE (UINTP cdata, OIF_HANDLE object, UINTP odata);
 
 {$EXTERNALSYM OII_DELETE}
-  OII_DELETE = function (cdata: UINTP; obj: OIF_HANDLE; odata: UINTP): INT_32; stdcall;
+  OII_DELETE = function (cdata: UINTP; obj: OIF_HANDLE; odata: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_CHANGE (UINTP cdata, OIF_HANDLE object, UINTP odata,
 ////   OIF_HANDLE *change_object);
 
 {$EXTERNALSYM OII_CHANGE}
   OII_CHANGE = function (cdata: UINTP; obj: OIF_HANDLE; odata: UINTP;
-  var change_object: OIF_HANDLE): INT_32; stdcall;
+  var change_object: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OII_COMMIT_CHANGES (UINTP cdata, OIF_HANDLE object, UINTP odata,
 ////   OIF_HANDLE change_object, UINTP codata);
 
 {$EXTERNALSYM OII_COMMIT_CHANGES}
   OII_COMMIT_CHANGES = function (cdata: UINTP; obj: OIF_HANDLE; odata: UINTP;
-  change_object: OIF_HANDLE; codata: UINTP): INT_32; stdcall;
+  change_object: OIF_HANDLE; codata: UINTP): INT_32; cdecl;
 
 ////INT_32 OII_CANCEL_CHANGES (UINTP cdata, OIF_HANDLE object, UINTP odata,
 ////   OIF_HANDLE change_object, UINTP codata);
 
 {$EXTERNALSYM OII_CANCEL_CHANGES}
   OII_CANCEL_CHANGES = function (cdata: UINTP; obj: OIF_HANDLE; odata: UINTP;
-  change_object: OIF_HANDLE; codata: UINTP): INT_32; stdcall;
+  change_object: OIF_HANDLE; codata: UINTP): INT_32; cdecl;
 
 
 ////INT_32 OII_SHUTDOWN (void);
 
 {$EXTERNALSYM OII_SHUTDOWN}
-  OII_SHUTDOWN = function: INT_32; stdcall;
+  OII_SHUTDOWN = function: INT_32; cdecl;
 
 const
 
@@ -1980,40 +2007,40 @@ type
 ////   OII_SHUTDOWN oii_shutdown;                   //  Optional
 ////   } OIF_OBJECT_DEFINITION;
 
-  POifObjectDefinition = ^TOifObjectDefinition;
+  POIFObjectDefinition = ^TOIFObjectDefinition;
   {$EXTERNALSYM OIF_OBJECT_DEFINITION}
   OIF_OBJECT_DEFINITION = packed record
     sversion: UINT_32;
     flags: UINT_32;
-    oname: array[0..29] of AnsiChar;
-    otypes: array[0..255] of AnsiChar;
+    OName: array[0..29] of AnsiChar;
+    OTypes: array[0..255] of AnsiChar;
 {$MESSAGE WARN 'Convert CRITICAL_SECTION'}
-//    csec: CRITICAL_SECTION;
-    oii_new: OII_NEW;
-    oii_dispose: OII_DISPOSE;
-    oii_duplicate_object: OII_DUPLICATE_OBJECT;  //  Not currently used - set to NULL
-    oii_compare: OII_COMPARE;
-    oii_lock: OII_LOCK;                          //  Optional
-    oii_unlock: OII_UNLOCK;                      //  Optional
-    oii_get_attribute: OII_GET_ATTRIBUTE;
-    oii_get_attribute_info: OII_GET_ATTRIBUTE_INFO;
-    oii_set_attribute: OII_SET_ATTRIBUTE;
-    oii_do_method: OII_DO_METHOD;
-    oii_scan_first: OII_SCAN_FIRST;              //  Container objects only 
-    oii_scan_last: OII_SCAN_LAST;                //  Container objects only 
-    oii_scan_next: OII_SCAN_NEXT;                //  Container objects only 
-    oii_scan_prev: OII_SCAN_PREV;                //  Container objects only 
-    oii_end_scan: OII_END_SCAN;                  //  Container objects only 
-    oii_search_first: OII_SEARCH_FIRST;          //  Optional, containers only 
-    oii_search_next: OII_SEARCH_NEXT;            //  Optional, containers only 
-    oii_end_search: OII_END_SEARCH;              //  Optional, containers only 
-    oii_add: OII_ADD;                            //  Container objects only 
-    oii_addto: OII_ADDTO;                        //  Container objects only 
-    oii_delete: OII_DELETE;                      //  Optional unless container 
-    oii_change: OII_CHANGE;                      //  Optional unless container 
-    oii_commit_changes: OII_COMMIT_CHANGES;      //  Optional unless container 
-    oii_cancel_changes: OII_CANCEL_CHANGES;      //  Optional unless container 
-    oii_shutdown: OII_SHUTDOWN;                 //  Optional 
+    csec: RTL_CRITICAL_SECTION;
+    OIINew: OII_NEW;
+    OIIDispose: OII_DISPOSE;
+    OIIDuplicateObject: OII_DUPLICATE_OBJECT;  //  Not currently used - set to NULL
+    OIICompare: OII_COMPARE;
+    OIILock: OII_LOCK;                          //  Optional
+    OIIUnlock: OII_UNLOCK;                      //  Optional
+    OIIGetAttribute: OII_GET_ATTRIBUTE;
+    OIIGetAttributeInfo: OII_GET_ATTRIBUTE_INFO;
+    OIISetAttribute: OII_SET_ATTRIBUTE;
+    OIIDoMethod: OII_DO_METHOD;
+    OIIScanFirst: OII_SCAN_FIRST;              //  Container objects only
+    OIIScanLast: OII_SCAN_LAST;                //  Container objects only
+    OIIScanNext: OII_SCAN_NEXT;                //  Container objects only
+    OIIScanPrev: OII_SCAN_PREV;                //  Container objects only
+    OIIEndScan: OII_END_SCAN;                  //  Container objects only
+    OIISearchFirst: OII_SEARCH_FIRST;          //  Optional, containers only
+    OIISearchNext: OII_SEARCH_NEXT;            //  Optional, containers only
+    OIIEndSearch: OII_END_SEARCH;              //  Optional, containers only
+    OIIAdd: OII_ADD;                            //  Container objects only
+    OIIAddTo: OII_ADDTO;                        //  Container objects only
+    OIIDelete: OII_DELETE;                      //  Optional unless container
+    OIIChange: OII_CHANGE;                      //  Optional unless container
+    OIICommitChanges: OII_COMMIT_CHANGES;      //  Optional unless container
+    OIICancelChanges: OII_CANCEL_CHANGES;      //  Optional unless container
+    OIIShutdown: OII_SHUTDOWN;                 //  Optional
   end; 
   TOifObjectDefinition = OIF_OBJECT_DEFINITION; 
 
@@ -2027,17 +2054,17 @@ type
 ////INT_32 OIF_REGISTER (const OIF_OBJECT_DEFINITION *oifd);
 
 {$EXTERNALSYM OIF_REGISTER}
-  OIF_REGISTER = function (var oifd: OIF_OBJECT_DEFINITION): INT_32; stdcall;
+  OIF_REGISTER = function (var oifd: OIF_OBJECT_DEFINITION): INT_32; cdecl;
 
 ////INT_32 OIF_MAKE_HANDLE (INT_32 objdef, UINTP data, OIF_HANDLE *object);
 
 {$EXTERNALSYM OIF_MAKE_HANDLE}
-  OIF_MAKE_HANDLE = function (objdef: INT_32; data: UINTP; var obj: OIF_HANDLE): INT_32; stdcall;
+  OIF_MAKE_HANDLE = function (objdef: INT_32; data: UINTP; var obj: OIF_HANDLE): INT_32; cdecl;
 
 ////INT_32 OIF_CHANGE_DATA (OIF_HANDLE object, UINTP old_data, UINTP new_data);
 
 {$EXTERNALSYM OIF_CHANGE_DATA}
-  OIF_CHANGE_DATA = function (obj: OIF_HANDLE; old_data: UINTP; new_data: UINTP): INT_32; stdcall;
+  OIF_CHANGE_DATA = function (obj: OIF_HANDLE; old_data: UINTP; new_data: UINTP): INT_32; cdecl;
 
 
 ////INT_32 OIF_RECREATE_OBJECT (const void *data, UINT_32 dlen,
@@ -2045,18 +2072,18 @@ type
 
 {$EXTERNALSYM OIF_RECREATE_OBJECT}
   OIF_RECREATE_OBJECT = function (data: Pointer; dlen: UINT_32;
-  var obj: OIF_HANDLE; cdef: UINT_32; cdata: UINTP): INT_32; stdcall;
+  var obj: OIF_HANDLE; cdef: UINT_32; cdata: UINTP): INT_32; cdecl;
 
 
 ////INT_32 OIF_OVERRIDE_OBJECT (OIF_HANDLE object, INT_32 objdef, UINTP data);
 
 {$EXTERNALSYM OIF_OVERRIDE_OBJECT}
-  OIF_OVERRIDE_OBJECT = function (obj: OIF_HANDLE; objdef: INT_32; data: UINTP): INT_32; stdcall;
+  OIF_OVERRIDE_OBJECT = function (obj: OIF_HANDLE; objdef: INT_32; data: UINTP): INT_32; cdecl;
 
 ////INT_32 OIF_UNOVERRIDE_OBJECT (OIF_HANDLE object, INT_32 objdef, UINTP data);
 
 {$EXTERNALSYM OIF_UNOVERRIDE_OBJECT}
-  OIF_UNOVERRIDE_OBJECT = function (obj: OIF_HANDLE; objdef: INT_32; data: UINTP): INT_32; stdcall;
+  OIF_UNOVERRIDE_OBJECT = function (obj: OIF_HANDLE; objdef: INT_32; data: UINTP): INT_32; cdecl;
 
 const
 

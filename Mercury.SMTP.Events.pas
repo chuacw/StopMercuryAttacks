@@ -207,11 +207,62 @@ const
   {$EXTERNALSYM MSEVT_COMMAND}
   MSEVT_COMMAND                       = 14;
   {$EXTERNALSYM MSEVT_RSET}
-  MSEVT_RSET                          = 17; 
+  MSEVT_RSET                          = 17;
   {$EXTERNALSYM MSEVT_MAIL}
+
+///<summary>
+/// MercuryS generates this event when it receives a MAIL FROM: command
+/// from the connected peer. The "inbuf" field in the EVENTBUF parameter
+/// contains the full, unmodified contents of the MAIL FROM: command -
+/// the event handler can modify this field if it wishes: the event is
+/// generated before MercuryS actually examines the parameter itself, so
+/// if the handler modifies the parameter, MercuryS will process the
+/// modified version.
+///
+/// An event handler can return -1 to tell MercuryS fail the command. In
+/// this case, if the "outbuf" member of the EVENTBUF structure is not an
+/// empty string on return, MercuryS will write it to the socket - it is
+/// the event handler's job to format the response correctly, including a
+/// proper RFC2821 400- or 500- series error code. If the "outbuf" member
+/// is zero-length, MercuryS will generate a standard 500-series error
+/// response. This response does not terminate the connection - the peer
+/// can, if it wishes, attempt to issue another MAIL FROM: command.
+///
+/// An event handler can return -2 to tell MercuryS that it should both
+/// fail the command, and terminate the connection. As with the -1 return,
+/// the "outbuf" member of the parameter can be set to an error message to
+/// return to the peer, with MercuryS generating a reasonable default if
+/// it is zero-length.
+///
+/// An event handler can return -3 to tell MercuryS that it should fail
+/// the command, terminate the connection, and add the peer's IP address
+/// to its internal short-term blacklist. The "outbuf" parameter is
+/// handled the same in this case as it is for returns of -1 or -2.
+///
+/// An event handler can return 1 to tell MercuryS that it should suppress
+/// all transaction-level MAIL filtering rules for this connection.
+///</summary>
   MSEVT_MAIL                          = 3;
   {$EXTERNALSYM MSEVT_MAIL_OK}
-  MSEVT_MAIL_OK                       = 4; 
+///<summary>
+/// MercuryS generates this message once it has parsed the MAIL FROM:
+/// command received from the connected peer. If the MAIL FROM: command
+/// has an ESMTP "SIZE" declaration, the "msize" member of the MSEVENTBUF
+/// parameter will reflect that declaration from this point on. The
+/// "return_path" member of the structure will contain the fully reduced
+/// and parsed version of the address from the MAIL FROM: command from
+/// the time this message is generated onwards. The contents of the
+/// "inbuf" field are undefined during this message, and the field should
+/// be neither inspected nor altered.
+///
+/// This message is generated immediately before MercuryS creates the
+/// queue job for the transaction, and is intended as a kind of "final
+/// check" on the sender's address.
+///
+/// Event handlers can respond to this event in the same ways and with the
+/// same effects as defined for the MSEVT_MAIL event (see above).
+/// </summary>
+  MSEVT_MAIL_OK                       = 4;
   {$EXTERNALSYM MSEVT_RCPT}
   MSEVT_RCPT                          = 5; 
   {$EXTERNALSYM MSEVT_RCPT_OK}
