@@ -1,4 +1,4 @@
-library StopSMTPAttacks;
+library Mercury.Daemons.StopSMTPAttacks;
 
 {.$R *.res}
 {.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([vcPublic])}

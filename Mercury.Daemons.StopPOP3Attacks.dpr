@@ -1,4 +1,4 @@
-library StopPOP3Attacks;
+library Mercury.Daemons.StopPOP3Attacks;
 
 {.$R *.res}
 {.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([vcPublic])}

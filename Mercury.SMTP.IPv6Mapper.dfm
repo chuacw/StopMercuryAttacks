@@ -15,7 +15,6 @@ object frmMain: TfrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object IdMappedSMTPPortTCP: TIdMappedPortTCP
-    Active = True
     Bindings = <
       item
         IP = '::'

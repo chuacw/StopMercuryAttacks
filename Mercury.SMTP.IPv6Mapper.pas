@@ -19,6 +19,7 @@ type
     procedure Exit1Click(Sender: TObject);
   private
     { Private declarations }
+    procedure InitMappedPort(AMappedPort: TIdMappedPortTCP; APort: Integer);
   public
     { Public declarations }
   end;
@@ -27,6 +28,8 @@ var
   frmMain: TfrmMain;
 
 implementation
+uses
+  IdSocketHandle, IdGlobal;
 
 {$R *.dfm}
 
@@ -37,8 +40,32 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
+var
+  LIPv6: TIdSocketHandle;
 begin
   Application.ShowMainForm := False; // Hide the main form on startup
+  IdMappedPOPPortTCP.Free;
+  IdMappedSMTPPortTCP.Free;
+
+  IdMappedPOPPortTCP  := TIdMappedPortTCP.Create(Self);
+  IdMappedSMTPPortTCP := TIdMappedPortTCP.Create(Self);
+
+  InitMappedPort(IdMappedPOPPortTCP, 110);
+  InitMappedPort(IdMappedSMTPPortTCP, 25);
+end;
+
+procedure TfrmMain.InitMappedPort(AMappedPort: TIdMappedPortTCP; APort: Integer);
+var
+  LIPv6: TIdSocketHandle;
+begin
+  AMappedPort.MappedPort := APort;
+  AMappedPort.MappedHost := '192.168.0.2';
+
+  LIPv6 := AMappedPort.Bindings.Add;
+  LIPv6.Port := APort;
+  LIPv6.IPVersion := Id_IPv6;
+
+  AMappedPort.Active := True;
 end;
 
 end.
