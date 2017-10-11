@@ -2,7 +2,7 @@ unit Mercury.Daemon;
 {$MESSAGE WARN 'Most/All int is translated as INT_16. This might not be correct, and if so, should be translated to INT_32'}
 {$MESSAGE WARN 'Returns of int can be translated to INT_32, since that return is into CPU registers.'}
 // chuacw
-{.$WARNINGS OFF}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
 (*
@@ -85,7 +85,7 @@ const
 //  Statistics manager constants.
 
   {$EXTERNALSYM STC_INTEGER}
-  STC_INTEGER                         = 0; 
+  STC_INTEGER                         = 0;
   {$EXTERNALSYM STC_STRING}
   STC_STRING                          = 1; 
   {$EXTERNALSYM STC_DATE}
@@ -128,6 +128,7 @@ type
   {$EXTERNALSYM USHORT}
   USHORT = Word;
   TUShort = Word;
+  Short   = SmallInt;
 ////  typedef unsigned long ULONG;
 
   PULong = ^TULong;
@@ -2014,7 +2015,6 @@ type
     flags: UINT_32;
     OName: array[0..29] of AnsiChar;
     OTypes: array[0..255] of AnsiChar;
-{$MESSAGE WARN 'Convert CRITICAL_SECTION'}
     csec: RTL_CRITICAL_SECTION;
     OIINew: OII_NEW;
     OIIDispose: OII_DISPOSE;
@@ -2329,7 +2329,7 @@ type
 
 // typedef UINTP (*GET_VARIABLE) (int index);
   {$EXTERNALSYM GET_VARIABLE}
-  GET_VARIABlE = function(Index: INT_16): UINTP; cdecl;
+  GET_VARIABlE = function(Index: INT_32): UINTP; cdecl;
 
 // typedef int (*IS_LOCAL_ADDRESS) (char *address, char *uic, char *server);
   {$EXTERNALSYM IS_LOCAL_ADDRESS}
@@ -3397,9 +3397,16 @@ type
 
 type
 
-  PMInterface = ^TMInterface;
-  PM_INTERFACE = PMInterface;
+
+  PMercuryFuncPtrs = ^TMercuryFuncPtrs;
+  /// <summary>
+  /// Poi
+  /// <summary>
+  PM_INTERFACE = PMercuryFuncPtrs;
   {$EXTERNALSYM M_INTERFACE}
+  /// <summary>
+  /// Stores Mercury version, and pointers to various functions
+  /// <summary>
   M_INTERFACE = packed record
     dsize: Longint;                               //  Size of this structure
     vmajor: Byte;
@@ -3621,7 +3628,7 @@ type
     oif_scan_last: OIF_SCAN_LAST; 
     oif_scan_next: OIF_SCAN_NEXT;
     oif_scan_prev: OIF_SCAN_PREV;
-    oif_end_scan: OIF_END_SCAN; 
+    oif_end_scan: OIF_END_SCAN;
     oif_search_first: OIF_SEARCH_FIRST; 
     oif_search_next: OIF_SEARCH_NEXT; 
     oif_end_search: OIF_END_SEARCH; 
@@ -3643,7 +3650,14 @@ type
     get_timezone: GET_TIMEZONE; // GET_TIMEZONE;
     oif_has_type: OIF_HAS_TYPE; // OIF_HAS_TYPE;
   end;
-  TMInterface = M_INTERFACE;
+  /// <summary>
+  /// Alias to the M_INTERFACE
+  /// <summary>
+  TMercuryFuncPtrs = M_INTERFACE;
+  IMercury    = TMercuryFuncPtrs;
+
+  TStartup = function (m: PMercuryFuncPtrs; var Flags: UINT_32; Name, Param: PAnsiChar): Short; cdecl;
+  TConfigure = function (M: PMercuryFuncPtrs; Name, Param: PAnsiChar): Short; cdecl export;
 
 const
 
@@ -4130,7 +4144,7 @@ type
     flags: UINT_32;                       //  MBCF_* flags for this command
     protocol: UINT_32;                    //  Protocol level of conversation - 9, 10 or 11
     method: UINT_32;                      //  Method used to submit this command
-    mi: PM_INTERFACE;                     //  Mercury protocol module function block
+    mi: PMercuryFuncPtrs;                     //  Mercury protocol module function block
     mbs: PMB_SERVICES;                    //  Useful utility functions for external subservices
     username: array[0..63] of AnsiChar;   //  Username (if any) associated with conversation
     ticket: array[0..31] of AnsiChar;     //  Session ticket (for session-based services)

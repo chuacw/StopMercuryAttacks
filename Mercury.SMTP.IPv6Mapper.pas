@@ -1,5 +1,8 @@
 unit Mercury.SMTP.IPv6Mapper;
 
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$WEAKLINKRTTI ON}
+
 interface
 
 uses
@@ -40,8 +43,6 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
-var
-  LIPv6: TIdSocketHandle;
 begin
   Application.ShowMainForm := False; // Hide the main form on startup
   IdMappedPOPPortTCP.Free;

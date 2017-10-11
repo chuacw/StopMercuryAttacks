@@ -1,6 +1,7 @@
 // chuacw
 unit Mercury.SMTP.Events;
-{$WARNINGS OFF}
+
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
 (*

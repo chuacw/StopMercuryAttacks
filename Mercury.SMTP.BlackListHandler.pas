@@ -1,5 +1,8 @@
 unit Mercury.SMTP.BlackListHandler;
 
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$WEAKLINKRTTI ON}
+
 interface
 uses System.Generics.Collections;
 

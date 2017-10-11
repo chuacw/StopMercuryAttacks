@@ -1,19 +1,16 @@
 unit Mercury.POP3.EventHandlers;
-{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
-{.$STRONGLINKTYPES OFF}
-// chuacw
+
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
 interface
 uses Mercury.POP3.Events, Mercury.Daemon;
 
-function startup(m: PM_INTERFACE; var flags: UINT_32; Name,
+function startup(m: PMercuryFuncPtrs; var flags: UINT_32; Name,
   param: PAnsiChar): Smallint; cdecl; export;
 
-{$IF DEFINED(CLOSEDOWN)}
-function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
+function closedown(m: PMercuryFuncPtrs; code: UINT_32; name: PAnsiChar;
   param: PAnsiChar): Smallint; cdecl; export;
-{$ENDIF}
 
 implementation
 uses System.SysUtils, System.Generics.Collections, System.DateUtils,
@@ -47,7 +44,7 @@ begin
     pms := PMPEventBuf(EventData);
     IPAddress := pms.client;
 
-    if Pos('192.168', IPAddress)>=0 then
+    if Pos(AnsiString('192.168'), IPAddress)>=0 then
       Exit;
 
     if LastConnectionTime.ContainsKey(IPAddress) then
@@ -152,14 +149,15 @@ end;
 
 function RegisterPOP3EventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32; inline;
 begin
-  Result := mi.RegisterEventHandler(MMI_MERCURYP, Event, EProc, CustomData);
+  Result := MercuryFuncPtrs.RegisterEventHandler(MMI_MERCURYP, Event, EProc, CustomData);
 end;
 
-function startup(m: PM_INTERFACE; var flags: UINT_32; Name, Param: PAnsiChar): Smallint;
+function startup(m: PMercuryFuncPtrs; var flags: UINT_32; Name, Param: PAnsiChar): Smallint;
 var
   Text: string;
 begin
-  mi := m^; // Copy the structure, not the pointer, as the data at the pointer will be released
+  Flags := 0;
+  MercuryFuncPtrs := m^; // Copy the structure, not the pointer, as the data at the pointer will be released
   ModuleName := name;
 
   if RegisterPOP3EventHandler(MPEVT_CONNECT2, @POP3EventHandler, nil)=0 then
@@ -190,19 +188,22 @@ begin
   Result := 1; // Non-zero to indicate success!
 end;
 
-{$IF DEFINED(CLOSEDOWN)}
-function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
-  param: PAnsiChar): Smallint;
+procedure Shutdown;
 begin
   FreeAndNil(LastUserPassCount);
   FreeAndNil(LastConnectionTime);
+  LastUserPassCount := nil;
+  LastConnectionTime := nil;
 end;
-{$ENDIF}
+
+function closedown(m: PMercuryFuncPtrs; code: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint;
+begin
+  Shutdown;
+  Result := 0;
+end;
 
 initialization
 finalization
-  LastUserPassCount.Free;
-  LastConnectionTime.Free;
-  LastUserPassCount := nil;
-  LastConnectionTime := nil;
+  Shutdown;
 end.

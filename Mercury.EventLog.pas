@@ -1,6 +1,9 @@
 // chuacw
 unit Mercury.EventLog;
 
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$WEAKLINKRTTI ON}
+
 interface
 uses Winapi.Windows;
 

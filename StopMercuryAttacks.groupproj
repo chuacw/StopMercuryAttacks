@@ -24,6 +24,15 @@
         <Projects Include="Mercury.Documentation.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="TestLoadMercuryLib.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Mercury.Daemons.Forwarder.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="TestMercurySMTPBlacklistConfigurator.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -95,14 +104,41 @@
     <Target Name="Mercury_Documentation:Make">
         <MSBuild Projects="Mercury.Documentation.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TestLoadMercuryLib">
+        <MSBuild Projects="TestLoadMercuryLib.dproj"/>
+    </Target>
+    <Target Name="TestLoadMercuryLib:Clean">
+        <MSBuild Projects="TestLoadMercuryLib.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestLoadMercuryLib:Make">
+        <MSBuild Projects="TestLoadMercuryLib.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder">
+        <MSBuild Projects="Mercury.Daemons.Forwarder.dproj"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder:Clean">
+        <MSBuild Projects="Mercury.Daemons.Forwarder.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder:Make">
+        <MSBuild Projects="Mercury.Daemons.Forwarder.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TestMercurySMTPBlacklistConfigurator">
+        <MSBuild Projects="TestMercurySMTPBlacklistConfigurator.dproj"/>
+    </Target>
+    <Target Name="TestMercurySMTPBlacklistConfigurator:Clean">
+        <MSBuild Projects="TestMercurySMTPBlacklistConfigurator.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestMercurySMTPBlacklistConfigurator:Make">
+        <MSBuild Projects="TestMercurySMTPBlacklistConfigurator.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Mercury_Daemons_StopSMTPAttacks;Mercury_Daemons_StopPOP3Attacks;TestSMTPMultipleAuth;MercuryApp;MercuryIPv6Mapper;Mercury_Daemons_MapIPv6;Mercury_Documentation"/>
+        <CallTarget Targets="Mercury_Daemons_StopSMTPAttacks;Mercury_Daemons_StopPOP3Attacks;TestSMTPMultipleAuth;MercuryApp;MercuryIPv6Mapper;Mercury_Daemons_MapIPv6;Mercury_Documentation;TestLoadMercuryLib;Mercury_Daemons_Forwarder;TestMercurySMTPBlacklistConfigurator"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Mercury_Daemons_StopSMTPAttacks:Clean;Mercury_Daemons_StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean;MercuryApp:Clean;MercuryIPv6Mapper:Clean;Mercury_Daemons_MapIPv6:Clean;Mercury_Documentation:Clean"/>
+        <CallTarget Targets="Mercury_Daemons_StopSMTPAttacks:Clean;Mercury_Daemons_StopPOP3Attacks:Clean;TestSMTPMultipleAuth:Clean;MercuryApp:Clean;MercuryIPv6Mapper:Clean;Mercury_Daemons_MapIPv6:Clean;Mercury_Documentation:Clean;TestLoadMercuryLib:Clean;Mercury_Daemons_Forwarder:Clean;TestMercurySMTPBlacklistConfigurator:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Mercury_Daemons_StopSMTPAttacks:Make;Mercury_Daemons_StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make;MercuryApp:Make;MercuryIPv6Mapper:Make;Mercury_Daemons_MapIPv6:Make;Mercury_Documentation:Make"/>
+        <CallTarget Targets="Mercury_Daemons_StopSMTPAttacks:Make;Mercury_Daemons_StopPOP3Attacks:Make;TestSMTPMultipleAuth:Make;MercuryApp:Make;MercuryIPv6Mapper:Make;Mercury_Daemons_MapIPv6:Make;Mercury_Documentation:Make;TestLoadMercuryLib:Make;Mercury_Daemons_Forwarder:Make;TestMercurySMTPBlacklistConfigurator:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

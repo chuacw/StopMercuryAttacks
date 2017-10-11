@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{3B27B5AE-E380-4B8D-AFB4-5E7BD938B680}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Mercury.Daemons.Forward.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Mercury.Daemons.Forwarder2.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="TestLoadMercuryLib.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Mercury.Daemons.Forwarder.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Mercury_Daemons_Forward">
+        <MSBuild Projects="Mercury.Daemons.Forward.dproj"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forward:Clean">
+        <MSBuild Projects="Mercury.Daemons.Forward.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forward:Make">
+        <MSBuild Projects="Mercury.Daemons.Forward.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder2">
+        <MSBuild Projects="Mercury.Daemons.Forwarder2.dproj"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder2:Clean">
+        <MSBuild Projects="Mercury.Daemons.Forwarder2.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder2:Make">
+        <MSBuild Projects="Mercury.Daemons.Forwarder2.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TestLoadMercuryLib">
+        <MSBuild Projects="TestLoadMercuryLib.dproj"/>
+    </Target>
+    <Target Name="TestLoadMercuryLib:Clean">
+        <MSBuild Projects="TestLoadMercuryLib.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestLoadMercuryLib:Make">
+        <MSBuild Projects="TestLoadMercuryLib.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder">
+        <MSBuild Projects="Mercury.Daemons.Forwarder.dproj"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder:Clean">
+        <MSBuild Projects="Mercury.Daemons.Forwarder.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Mercury_Daemons_Forwarder:Make">
+        <MSBuild Projects="Mercury.Daemons.Forwarder.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Mercury_Daemons_Forward;Mercury_Daemons_Forwarder2;TestLoadMercuryLib;Mercury_Daemons_Forwarder"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Mercury_Daemons_Forward:Clean;Mercury_Daemons_Forwarder2:Clean;TestLoadMercuryLib:Clean;Mercury_Daemons_Forwarder:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Mercury_Daemons_Forward:Make;Mercury_Daemons_Forwarder2:Make;TestLoadMercuryLib:Make;Mercury_Daemons_Forwarder:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

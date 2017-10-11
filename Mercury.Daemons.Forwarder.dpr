@@ -1,4 +1,4 @@
-library Mercury.Daemons.StopSMTPAttacks;
+library Mercury.Daemons.Forwarder;
 
 {.$R *.res}
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
@@ -15,14 +15,11 @@ uses
   Mercury.Helpers in 'Mercury.Helpers.pas',
   Mercury.EventLog in 'Mercury.EventLog.pas',
   SysUtils.GuardUtils in '..\Libraries\SysUtils.GuardUtils.pas',
+  Mercury.SMTP.BlackListHandler in 'Mercury.SMTP.BlackListHandler.pas',
   Winapi.Windows,
-  Mercury.SMTP.ConfigureBlacklist in 'Mercury.SMTP.ConfigureBlacklist.pas' {frmBlacklist},
   Mercury.EnableMemoryLeak in 'Mercury.EnableMemoryLeak.pas';
 
 exports
-  daemon,
-  startup,
-  configure,
-  closedown;
+  configureforwarder name 'configure';
 
 end.

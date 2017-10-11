@@ -1,8 +1,8 @@
 library Mercury.Daemons.StopPOP3Attacks;
 
 {.$R *.res}
-{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([vcPublic])}
-{.$STRONGLINKTYPES OFF}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$STRONGLINKTYPES OFF}
 {$WEAKLINKRTTI ON}
 
 uses
@@ -15,10 +15,7 @@ uses
   Mercury.EventLog in 'Mercury.EventLog.pas',
   Mercury.POP3.Events in 'Mercury.POP3.Events.pas';
 
-exports startup{$IF DEFINED(CLOSEDOWN)},
-        closedown
-        {$ENDIF}
-;
+exports startup, closedown;
 
 {$IF DEFINED(DEBUG)}
 procedure DllMain(reason: Integer);

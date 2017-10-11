@@ -1,25 +1,84 @@
 unit Mercury.SMTP.EventHandlers;
-{.$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
-{.$STRONGLINKTYPES OFF}
-// chuacw
+
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
 interface
 uses Mercury.SMTP.Events, Mercury.Daemon;
 
-function startup(m: PM_INTERFACE; var Flags: UINT_32; Name,
-  Param: PAnsiChar): Smallint; cdecl; export;
+function startup(AMercuryFuncPtrs: PMercuryFuncPtrs; var Flags: UINT_32; Name,
+  Param: PAnsiChar): Smallint; cdecl;
 
-{$IF DEFINED(CLOSEDOWN)}
-function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
-  param: PAnsiChar): Smallint; cdecl; export;
-{$ENDIF}
+///<summary>Doesn't get called if startup is exported.</summary>
+function configure(M: PMercuryFuncPtrs; Name, Param: PAnsiChar): Short; cdecl;
+
+///<summary>Forwards calls to configure in library specified in Daemon_Config's Param.
+/// configureforwarder exists in a separate DLL, which forwards to the actual DLL.
+/// The configuration section needs to look like the following:
+/// [Daemon_Config]
+/// Configure StopSMTPAttack...=C:\MERCURY\DAEMONS\Mercury.Daemons.Forwarder.dll;C:\MERCURY\DAEMONS\Mercury.Daemons.StopSMTPAttacks.dll
+/// The DLL after the ; is the DLL to load and forward the call to
+/// <param name="M">Pointer to M_INTERFACE</param>
+/// <param name="Unused">Unused</param>
+/// <param name="ForwardToDLL">Points to DLL to forward to</param>
+///</summary>
+function configureforwarder(M: PMercuryFuncPtrs; Unused, ForwardToDLL: PAnsiChar): Short; cdecl;
+
+function daemon(job: Pointer; M: PMercuryFuncPtrs; Address, Parameter: PAnsiChar): Short; cdecl;
+
+function closedown(m: PMercuryFuncPtrs; code: UINT_32; name: PAnsiChar;
+  param: PAnsiChar): Smallint; cdecl;
 
 implementation
 uses
-  SysUtils.GuardUtils, System.SysUtils, System.Generics.Collections,
+  SysUtils.GuardUtils, System.SysUtils,
+  System.Generics.Collections,
   System.DateUtils, System.Classes, System.AnsiStrings, System.Win.Firewall,
-  System.SyncObjs, Mercury.Helpers;
+  System.SyncObjs, Mercury.Helpers, VCL.Forms, Winapi.Windows,
+  Mercury.SMTP.ConfigureBlacklist, Vcl.Controls;
+
+const
+  SMailFrom: AnsiString = 'MAIL FROM';
+
+function EmailOf(const AEmailAddr: AnsiString): AnsiString;
+var
+  I: Integer;
+begin
+  Result := UpperCase(AEmailAddr);
+  if Pos(AnsiString(SMailFrom), Result)=1 then
+    begin
+      Result := AEmailAddr;  // Remove the results of the UpperCase
+      Delete(Result, 1, Length(SMailFrom));
+    end;
+  I := AnsiPos(AnsiString(':'), Result);
+  if I>0 then
+    Delete(Result, I, 1);
+  I := AnsiPos(AnsiString('<'), Result);
+  if I>0 then
+    Delete(Result, I, 1);
+  I := AnsiPos(AnsiString('>'), Result);
+  if I>0 then
+    Delete(Result, I, 1);
+  Result := Trim(Result);
+end;
+
+function IsValidMailFrom(const AMailFrom: AnsiString): Boolean;
+var
+  LMailFrom: AnsiString;
+begin
+  LMailFrom := UpperCase(Trim(AMailFrom));
+  Result := AnsiPos(SMailFrom, LMailFrom)>0;
+end;
+
+function DomainOf(const AEmailAddr: AnsiString): AnsiString;
+var
+  LAt: Integer;
+begin
+  LAt := AnsiPos(AnsiString('@'), AEmailAddr);
+  if LAt>0 then
+    Result := Copy(AEmailAddr, LAt+1, Length(AEmailAddr)-LAt) else
+    Result := '';
+end;
 
 const
   MinConnectTime = 70;
@@ -30,12 +89,25 @@ type
   TCommand = AnsiString;
   THandler = reference to function: INT_32;
 
+  TUniqueValue = record
+    U1: Integer;
+    U2: string;
+  end;
+
 var
+  UniqueValue: TUniqueValue;
+
+var
+  GStartupCode: Int64;
   LastAuthTime: TDictionary<TIPAddress, TDateTime> = nil;
   LastConnectionTime: TDictionary<TIPAddress, TDateTime> = nil;
-  Blacklist: TList<AnsiString>;
+  BlacklistDirty: Boolean;
+  BlacklistedSender,
+  MightBan: TList<AnsiString>; Blacklist: TStringList;
   Handlers: TList<THandler>;
 //  Event: TEvent;
+
+procedure CheckAdd(const AList: TStringList; const IPAddress: AnsiString); forward;
 
 ///<param name="module">module which the event is meant for</param>
 ///<param name="event">ID of event</param>
@@ -44,27 +116,63 @@ var
 ///<summary>Handles the event for the given module</summary>
 function SMTPMailFromHandler(ModuleID, EventID: UINT_32;
   EventData, CustomData: Pointer): INT_32; cdecl;
+const
+  SDoNotSpam: AnsiString = '554 DO NOT SPAM!';
+  SInvalidMailFrom: AnsiString = '500 Invalid MAIL FROM!';
 var
-  LMailFrom: AnsiString;
-  pms: PMSEventBuf;
-  LastConnectedOn: TDateTime;
+  LBlockedHost: string;
+  LDomain, LBlockedDomainOrHost, LMailFrom, LEmailAddr, LIPOrHost: AnsiString;
+  PMSEvent: PMSEventBuf;
+  LIsValidMailFrom: Boolean;
 begin
   Result := 1; // Non-zero to indicate success!
   try
-    pms := PMSEventBuf(EventData);
-    LMailFrom := AnsiString(pms.inbuf);
+    PMSEvent := PMSEventBuf(EventData);
+    LMailFrom := AnsiString(PMSEvent.inbuf);
+    LIsValidMailFrom := IsValidMailFrom(LMailFrom);
+    if not LIsValidMailFrom then
+      begin
+        System.AnsiStrings.StrPCopy(PMSEvent^.outbuf, SInvalidMailFrom);
+        Exit(-1);
+      end;
+    LEmailAddr := EmailOf(LMailFrom);
+    LDomain := DomainOf(LEmailAddr);
+//    if LEmailAddr.StartsWith('<'
+    LIPOrHost := PMSEvent.client;
+    Log(System.AnsiStrings.Format('connection from %s', [LIPOrHost]));
 
-    Log(Format('connection from %s', [LMailFrom]));
+// Blacklist email senders such as swe.topform@gmail.com using similar methods to below
+//
+//    if (AnsiPos('of@', string(LEmailAddr))>0) or
+//       (AnsiPos('cha.topform@gmail.com', string(LEmailAddr))>0) then
+//      Exit(-3);
 
-    if (Pos('<of@', LMailFrom)>0) or
-       (Pos('cha.topform@gmail.com', LMailFrom)>0) then
-      Exit(-3);
+  for LBlockedHost in Blacklist do
+    begin
+      LBlockedDomainOrHost := AnsiString(LBlockedHost);
+      if AnsiPos(LBlockedDomainOrHost, LDomain)>0 then
+        begin
+          System.AnsiStrings.StrPCopy(PMSEvent^.outbuf, SDoNotSpam);
+          Log(System.AnsiStrings.Format('Blocked: %s, %s: %s', [LIPOrHost, 'Sender', LEmailAddr]));
+          CheckAdd(Blacklist, LIPOrHost);
+          Exit(-3);
+        end;
+    end;
+
   except
     on E: Exception do
       begin
         Log(E.Message);
       end;
   end;
+end;
+
+procedure CheckAdd(const AList: TStringList; const IPAddress: AnsiString);
+begin
+  if Assigned(AList) and (AList.IndexOf(string(IPAddress))<>-1) then
+    begin
+      AList.Add(string(IPAddress));
+    end;
 end;
 
 ///<param name="module">module which the event is meant for</param>
@@ -84,7 +192,9 @@ begin
     pms := PMSEventBuf(EventData);
     IPAddress := AnsiString(pms.client);
 
-    Log(Format('connection from %s', [IPAddress]));
+    Log(System.AnsiStrings.Format('connection from %s', [IPAddress]));
+
+    if AnsiPos(AnsiString('192.168'), IPAddress)>0 then Exit;
 
       if LastConnectionTime.ContainsKey(IPAddress) then
         begin
@@ -93,8 +203,8 @@ begin
           ShowLastConnectedTime(AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastConnectedOn)), IPAddress);
           if WithinPastSeconds(Now, LastConnectedOn, MinConnectTime) then
             begin
-              Log(Format('Connection %s blacklisted.', [IPAddress]));
-              if Assigned(Blacklist) then Blacklist.Add(IPAddress);
+              Log(System.AnsiStrings.Format('Connection %s blacklisted.', [IPAddress]));
+              CheckAdd(Blacklist, IPAddress);
               pms.outbuf[0] := #0;
               Result := -3; // Blacklist!!!
             end;
@@ -125,10 +235,13 @@ function SMTPHeloHandler(ModuleID: UINT_32; EventID: UINT_32;
   EventData: Pointer; CustomData: Pointer): INT_32; cdecl;
 const
   cBlockSMTP: string = 'Block SMTP';
+  SHelo: AnsiString = 'HELO';
+  SEhlo: AnsiString = 'EHLO';
 var
   IPAddress: AnsiString;
   PMSEvent: PMSEventBuf;
-  SHelo, ClientNameOrIP, Greeting, BlacklistedClient: AnsiString;
+  LHelo, LClientNameOrIP, LGreeting, LHeloType: AnsiString;
+  LBlacklistedClient: string;
   C: AnsiChar;
 {$HINTS OFF}
   IsIP, LFreeRule: Boolean;
@@ -150,29 +263,34 @@ begin
 
   PMSEvent := PMSEventBuf(EventData);
   IPAddress := AnsiString(PMSEvent.client);
-  Log(Format('Checking IP: %s for HELO', [IPAddress]));
-  SHelo := PMSEvent.inbuf;
-  Greeting := UpperCase(Copy(SHelo, 1, 4));
-  if Pos('HELO', string(Greeting))=1 then
-    Delete(SHelo, 1, 5) else
-  if Pos('EHLO', string(Greeting))=1 then
-    Delete(SHelo, 1, 5);
-  ClientNameOrIP := AnsiString(string(SHelo).Trim);
-  if (Length(ClientNameOrIP)>2) then
+
+  if AnsiPos(AnsiString('192.168'), IPAddress)>0 then Exit;
+
+  Log(System.AnsiStrings.Format('Checking IP: %s for HELO', [IPAddress]));
+  LHelo := PMSEvent.inbuf;
+  LGreeting := AnsiUpperCase(Copy(SHelo, 1, 4));
+  if AnsiPos(SHelo, LGreeting)=1 then
     begin
-      if ClientNameOrIP[1]='[' then
-        Delete(ClientNameOrIP, 1, 1);
-      if ClientNameOrIP[Length(ClientNameOrIP)]=']' then
-        Delete(ClientNameOrIP, Length(ClientNameOrIP), 1);
+      Delete(LHelo, 1, 5);
+      LHeloType := SHelo;
+    end else
+  if AnsiPos(SEhlo, LGreeting)=1 then
+    begin
+      Delete(LHelo, 1, 5);
+      LHeloType := SEhlo;
     end;
-  if EndsText('.pw', ClientNameOrIP) or EndsText('rocks', ClientNameOrIP) then
+  LClientNameOrIP := AnsiString(Trim(SHelo));
+  if (Length(LClientNameOrIP)>2) then
     begin
-      bDoNotSpam := True;
-//      goto DoNotSpam;
+      if LClientNameOrIP[1]='[' then
+        Delete(LClientNameOrIP, 1, 1);
+      if LClientNameOrIP[Length(LClientNameOrIP)]=']' then
+        Delete(LClientNameOrIP, Length(LClientNameOrIP), 1);
     end;
 // This host name doesn't exists, but sends junk often
-  for BlacklistedClient in Blacklist do
-    if (BlacklistedClient=ClientNameOrIP) or (Pos(BlacklistedClient, ClientNameOrIP)<>0) then
+  for LBlacklistedClient in Blacklist do
+    if (AnsiString(LBlacklistedClient)=LClientNameOrIP) or
+    (AnsiPos(AnsiString(LBlacklistedClient), LClientNameOrIP)>0) then
       begin
         bDoNotSpam := True;
         Break;
@@ -181,13 +299,13 @@ begin
     begin
       DoNotSpam:
       System.AnsiStrings.StrPCopy(PMSEvent^.outbuf, '554 DO NOT SPAM!');
-      Log(Format('Blocking %s - %s', [ClientNameOrIP, IPAddress]));
-      if Assigned(Blacklist) then
-        Blacklist.Add(ClientNameOrIP);
+      Log(System.AnsiStrings.Format('Blocked: %s, %s: %s', [LClientNameOrIP, LHeloType, IPAddress]));
+      CheckAdd(Blacklist, LClientNameOrIP);
+      CheckAdd(Blacklist, IPAddress);
       Exit(-3);
     end;
   IsIP := True;
-  for C in ClientNameOrIP do  // Tests only IPv4
+  for C in LClientNameOrIP do  // Tests only IPv4
     if not CharInSet(C, ['0'..'9', '.']) then
       begin
         IsIP := False;
@@ -195,9 +313,8 @@ begin
       end;
   if IsIP then
     begin
-      Log(Format('HELO with IP detected! Rejecting connection from %s', [IPAddress]));
-      if Assigned(Blacklist) then
-        Blacklist.Add(ClientNameOrIP);
+      Log(System.AnsiStrings.Format('HELO with IP detected! Rejecting connection from %s', [IPAddress]));
+      CheckAdd(Blacklist, LClientNameOrIP);
       Result := -3; // Blacklist!
 //      LFirewall := TWindowsFirewall.Create;
 //      try
@@ -230,6 +347,12 @@ begin
 
 end;
 
+///<summary>Ensures everyone have a TStringList created with the same options.</summary>
+function NewStringList: TStringList;
+begin
+  Result := TStringList.Create(dupIgnore, True, False);
+end;
+
 procedure BanIPAddress(const IPAddress: AnsiString);
 var
   LFilename, LIPAddress: string;
@@ -237,7 +360,7 @@ var
 begin
   LIPAddress := string(IPAddress);
   LFilename := 'C:\MERCURY\DAEMONS\SMTPClientBlacklist.ini';
-  LBlacklist := TStringList.Create(dupIgnore, True, False);
+  LBlacklist := NewStringList;
   try
     if FileExists(LFilename) then
       LBlacklist.LoadFromFile(LFilename);
@@ -262,21 +385,25 @@ begin
 
   PMSEvent := PMSEventBuf(EventData);
   IPAddress := AnsiString(PMSEvent.client);
-  Log(Format('Checking IP: %s for Close/Abort', [IPAddress]));
+  Log(System.AnsiStrings.Format('Checking IP: %s for Close/Abort', [IPAddress]));
+
+  if AnsiPos(AnsiString('192.168'), IPAddress)>0 then
+    Exit;
 
   if (PMSEvent.flags and MSEF_AUTHENTICATED<>0) then
     begin
       if LastAuthTime.ContainsKey(IPAddress) then
         begin
-          Log(Format('%s previously tried AUTH and succeeded. Not banning', [IPAddress]));
+          Log(System.AnsiStrings.Format('%s previously tried AUTH and succeeded. Not banning', [IPAddress]));
           Exit(0);
         end;
-      Log(Format('Blacklisting %s', [IPAddress]));
+      Log(System.AnsiStrings.Format('Blacklisting %s', [IPAddress]));
       BanIPAddress(IPAddress);
       Exit(-3); // Blacklist!
     end else
     begin
-      Log(Format('Not authenticated: %s. Might ban?', [IPAddress]));
+      Log(System.AnsiStrings.Format('Not authenticated: %s. Might ban?', [IPAddress]));
+      MightBan.Add(IPAddress);
     end;
 
 end;
@@ -292,18 +419,16 @@ begin
 
   PMSEvent := PMSEventBuf(EventData);
   IPAddress := AnsiString(PMSEvent.client);
-  Log(Format('Checking IP: %s for COMMAND', [IPAddress]));
-
-  Log(Format('Event ID: %d', [EventID]));
+  Log(System.AnsiStrings.Format('Checking IP: %s for COMMAND, Event ID: %d', [IPAddress, EventID]));
 
   if LastAuthTime.ContainsKey(IPAddress) then
     begin
       LastAuthOn := LastAuthTime[IPAddress];
-    end else
+    end{ else
     begin
-      Log(Format('Adding %s to LastAuth', [IPAddress]));
+      Log(System.AnsiStrings.Format('Adding %s to LastAuth', [IPAddress]));
       LastAuthTime.AddOrSetValue(IPAddress, Now);
-    end;
+    end};
 end;
 
 // Rejects AUTH within MinTimeBetweenAuth of each other
@@ -319,7 +444,7 @@ begin
   PMSEvent := PMSEventBuf(EventData);
   IPAddress := AnsiString(PMSEvent.client);
 
-  Log(Format('Checking IP: %s for AUTH', [IPAddress]));
+  Log(System.AnsiStrings.Format('Checking IP: %s for AUTH', [IPAddress]));
   if LastAuthTime.ContainsKey(IPAddress) then
     begin
       LastAuthOn := LastAuthTime[IPAddress];
@@ -327,7 +452,8 @@ begin
       ShowLastConnectedTime(AnsiString(FormatDateTime('d mmm h:nn:ss am/pm', LastAuthOn)), IPAddress);
       if WithinPastSeconds(Now, LastAuthOn, MinTimeBetweenAuth) then
         begin
-          Log(Format('Connection %s blacklisted for AUTH.', [IPAddress]));
+          Log(System.AnsiStrings.Format('Connection %s blacklisted for AUTH.', [IPAddress]));
+          CheckAdd(Blacklist, IPAddress);
           PMSEvent.outbuf[0] := #0;
           Result := -3; // Blacklist!!!
         end;
@@ -340,14 +466,98 @@ begin
 
 end;
 
-function RegisterSMTPEventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32; inline;
+function RegisterSMTPEventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32;
 begin
-  Result := mi.RegisterEventHandler(MMI_MERCURYS, Event, EProc, CustomData);
+  Result := MercuryFuncPtrs.RegisterEventHandler(MMI_MERCURYS, Event, EProc, CustomData);
 end;
 
-//function startup(m: PM_INTERFACE; var Flags: UINT_32; const Name,
+function configure(M: PMercuryFuncPtrs; Name, Param: PAnsiChar): Short;
+var
+  LHandle: THandle;
+  AWorkingList: TStrings;
+  ABlacklistedDomain: string;
+  I: Integer;
+  LList: TStringList;
+begin
+  LHandle := THandle(M.get_variable(GV_FRAMEWINDOW));
+  try
+    if not Assigned(Application) then
+      Application := TApplication.Create(nil);
+    Application.Handle := LHandle;
+// Create forms here
+
+    frmBlacklist := TfrmBlacklist.Create(nil);
+    frmBlacklist.Blacklist := Blacklist;
+    if frmBlacklist.ShowModal = mrOk then
+      begin
+        AWorkingList := frmBlacklist.Blacklist;
+
+        LList := TStringList.Create;
+        try
+        // First, scan for items to add, then add it.
+          for I := 0 to AWorkingList.Count-1 do
+            begin
+              ABlacklistedDomain := AWorkingList[I];
+              if Blacklist.IndexOf(ABlacklistedDomain) = -1 then
+                begin
+                  Blacklist.Add(ABlacklistedDomain);
+                  Log('Added: ' + ABlacklistedDomain);
+                  BlacklistDirty := True;
+                end;
+            end;
+
+        // Now, scan for items to remove
+          for I := 0 to BlackList.Count-1 do
+            begin
+              ABlacklistedDomain := Blacklist[I];
+              if AWorkingList.IndexOf(ABlacklistedDomain) = -1 then
+                LList.Add(ABlacklistedDomain);
+            end;
+          for ABlacklistedDomain in LList do
+            begin
+              I := Blacklist.IndexOf(ABlacklistedDomain);
+              if I <> -1 then
+                begin
+                  Blacklist.Delete(I);
+                  Log('Removed: ' + ABlacklistedDomain);
+                  BlacklistDirty := True;
+                end;
+            end;
+        finally
+          LList.Free;
+        end;
+      end;
+    frmBlacklist.Free;
+
+    Result := 0; // unused
+  finally
+  end;
+end;
+
+function configureforwarder(M: PMercuryFuncPtrs; Unused, ForwardToDLL: PAnsiChar): Short; cdecl;
+var
+  LHandle: THandle;
+  LConfigure: TConfigure;
+  LibName: string;
+begin
+  LibName := string(ForwardToDLL);
+  LHandle     := LoadLibrary(PChar(LibName));
+  if LHandle = 0 then Exit(0);
+  LConfigure  := GetProcAddress(LHandle, 'configure');
+  if @LConfigure = nil then Exit(0);
+  Result := LConfigure(M, Unused, ForwardToDLL);
+  if LHandle <> 0 then
+    FreeLibrary(LHandle);
+end;
+
+function daemon(job: Pointer; M: PMercuryFuncPtrs; Address, Parameter: PAnsiChar): Short; cdecl; export;
+begin
+  Result := 0;
+end;
+
+//function startup(m: PMercuryFuncPtrs; var Flags: UINT_32; const Name,
 //  Param: string): Smallint; // cdecl; export;
-function startup(m: PM_INTERFACE; var Flags: UINT_32; Name, Param: PAnsiChar): Smallint;
+function startup(AMercuryFuncPtrs: PMercuryFuncPtrs; var Flags: UINT_32; Name, Param: PAnsiChar): Smallint;
 var
   LSBFailed, LSBSucceeded: TStringBuilder;
 
@@ -362,13 +572,15 @@ var
 var
   Guard: TGuard;
   Text: string;
-  LHost: AnsiString;
+  LHost: string;
   LHandler: THandler;
 begin
+  GStartupCode := $11223344;
+  Flags := 0;
   Guard.Assign(LSBFailed, TStringBuilder.Create);
   Guard.Assign(LSBSucceeded, TStringBuilder.Create);
   try
-    mi := m^; // Copy the structure, not the pointer, as the data at the pointer will be released
+    MercuryFuncPtrs := AMercuryFuncPtrs^; // Copy the structure, not the pointer, as the data at the pointer will be released
     ModuleName := Name;
 
     if Assigned(Handlers) then
@@ -385,7 +597,7 @@ begin
     if RegisterSMTPEventHandler(MSEVT_MAIL, @SMTPMailFromHandler, nil)=0 then
       LSBFailed.Append('SMTP MAIL') else
       begin
-//        Text := Format('registered successfully, Min: %d', [MinConnectTime]);
+//        Text := System.AnsiStrings.Format('registered successfully, Min: %d', [MinConnectTime]);
         LSBSucceeded.Append('SMTP MAIL');
         if LastConnectionTime = nil then
           LastConnectionTime := TDictionary<TIPAddress, TDateTime>.Create;
@@ -395,7 +607,7 @@ begin
     if RegisterSMTPEventHandler(MSEVT_CONNECT2, @SMTPEventHandler, nil)=0 then
       LSBFailed.Append('Connect') else
       begin
-//        Text := Format('registered successfully, Min: %d', [MinConnectTime]);
+//        Text := System.AnsiStrings.Format('registered successfully, Min: %d', [MinConnectTime]);
         LSBSucceeded.Append('Connect');
         if LastConnectionTime = nil then
           LastConnectionTime := TDictionary<TIPAddress, TDateTime>.Create;
@@ -448,32 +660,43 @@ begin
   end;
 end;
 
-procedure SaveBlackList(const AList: TList<AnsiString>; const Filename: string);
+procedure SaveBlackList(const AList: TStringList; const Filename: string);
 var
   F: TextFile;
   Line: AnsiString;
 begin
-  AssignFile(F, Filename);
-  Rewrite(F);
-  for Line in AList do
-    WriteLn(F, Line);
-  CloseFile(F);
+  if BlacklistDirty then
+    AList.SaveToFile(Filename);
+//  AssignFile(F, Filename);
+//  Rewrite(F);
+//  for Line in AList do
+//    WriteLn(F, Line);
+//  CloseFile(F);
 end;
 
-procedure LoadBlackList(const AList: TList<AnsiString>; const Filename: string);
+procedure LoadBlackList(const AList: TStringList; const Filename: string);
 var
   F: TextFile;
   Line: AnsiString;
+  Backup: TStringList;
 begin
-  AssignFile(F, Filename);
-  Reset(F);
-  while not eof(F) do
-    begin
-      ReadLn(F, Line);
-      if not AList.Contains(Line) then
-        AList.Add(Line);
-    end;
-  CloseFile(F);
+  Backup := NewStringList;
+  try
+    Backup.AddStrings(AList);
+    AList.LoadFromFile(Filename);
+    AList.AddStrings(Backup);
+  finally
+    Backup.Free;
+  end;
+//  AssignFile(F, Filename);
+//  Reset(F);
+//  while not eof(F) do
+//    begin
+//      ReadLn(F, Line);
+//      if not (AList.IndexOf(Line)=-1) then
+//        AList.Add(Line);
+//    end;
+//  CloseFile(F);
 end;
 
 procedure InitializeBlacklist;
@@ -494,23 +717,36 @@ begin
     end;
 end;
 
-{$IF DEFINED(CLOSEDOWN)}
-function closedown(m: PM_INTERFACE; code: UINT_32; name: PAnsiChar;
+var
+  LFreed: Boolean;
+
+procedure Shutdown;
+begin
+  if not LFreed then
+    begin
+      LastAuthTime.Free;
+      LastConnectionTime.Free;
+      Blacklist.Sort;
+      SaveBlackList(Blacklist, 'C:\MERCURY\DAEMONS\SMTPBlacklist.ini');
+      Blacklist.Free;
+      MightBan.Free;
+      LFreed := True;
+    end;
+end;
+
+function closedown(m: PMercuryFuncPtrs; code: UINT_32; name: PAnsiChar;
   param: PAnsiChar): Smallint;
 begin
-  FreeAndNil(LastAuthTime);
-  FreeAndNil(LastConnectionTime);
+  Shutdown;
+  Result := 0;
 end;
-{$ENDIF}
 
 initialization
-  Blacklist := TList<AnsiString>.Create;
+  LFreed := False;
+  Blacklist := NewStringList;
+  MightBan := TList<AnsiString>.Create;
   InitializeBlacklist;
 finalization
-  LastAuthTime.Free;
-  LastConnectionTime.Free;
-  Blacklist.Sort;
-  SaveBlackList(Blacklist, 'C:\MERCURY\DAEMONS\SMTPBlacklist.ini');
-  Blacklist.Free;
+  Shutdown;
 end.
 
