@@ -10,35 +10,40 @@ uses
   System.Classes,
   System.StrUtils,
   System.Types,
-  IdMappedPortTCP, IdSocketHandle, IdStack, IdContext, IdGlobal,
-//  IdTCPConnection,
+  IdMappedPortTCP,
+  IdSocketHandle,
+  IdStack,
+  IdContext,
+  IdGlobal,
   Mercury.Daemon in 'Mercury.Daemon.pas',
   Mercury.Helpers in 'Mercury.Helpers.pas',
-  SysUtils.EventUtils in '..\Libraries\SysUtils.EventUtils.pas';
+  SysUtils.EventUtils in '..\Libraries\SysUtils\SysUtils.EventUtils.pas';
 
 {$R *.res}
 
 var
   GMappedPorts: TList<TIdMappedPortTCP>;
-  IdMappedSMTPPortTCP: TIdMappedPortTCP;
-  IdMappedPOPPortTCP: TIdMappedPortTCP;
+  GIdMappedSMTPPortTCP: TIdMappedPortTCP;
+  GIdMappedPOPPortTCP: TIdMappedPortTCP;
 
-procedure InitMappedPort(var AMappedPort: TIdMappedPortTCP; const AHostIP: string; APort: Integer);
+procedure InitMappedPort(var AMappedPort: TIdMappedPortTCP; 
+  const ADestinationHostIP: string; ADestinationPort: Integer);
 var
   LIPv6: TIdSocketHandle;
 begin
   AMappedPort := TIdMappedPortTCP.Create(nil);
-  AMappedPort.MappedPort := APort;
-  AMappedPort.MappedHost := AHostIP;
-  AMappedPort.OnConnect := TEventMaker<TIdContext>.MakeEvent(procedure (AContext: TIdContext)
-  var
-    LPeerIP: string;
-  begin
-    LPeerIP := AContext.Connection.Socket.Binding.PeerIP; // IPv6 of connection origin
-  end);
+  AMappedPort.MappedPort := ADestinationPort;
+  AMappedPort.MappedHost := ADestinationHostIP;
+
+//  AMappedPort.OnConnect := TEventMaker<TIdContext>.MakeEvent(procedure (AContext: TIdContext)
+//  var
+//    LPeerIP: string;
+//  begin
+//    LPeerIP := AContext.Connection.Socket.Binding.PeerIP; // IPv6 of connection origin
+//  end);
 
   LIPv6 := AMappedPort.Bindings.Add;
-  LIPv6.Port := APort;
+  LIPv6.Port := ADestinationPort;
   LIPv6.IPVersion := Id_IPv6;
 
   AMappedPort.Active := True;
@@ -46,9 +51,9 @@ end;
 
 procedure FreeMappedPorts;
 begin
-  GMappedPorts.DisposeOf;
-  IdMappedPOPPortTCP.DisposeOf;
-  IdMappedSMTPPortTCP.DisposeOf;
+  GMappedPorts.Free;
+//  GIdMappedPOPPortTCP.Free;
+//  GIdMappedSMTPPortTCP.Free;
 end;
 
 function startup(m: PMercuryFuncPtrs; var Flags: UINT_32; Name,
@@ -73,17 +78,16 @@ begin
       end;
 
     GMappedPorts := nil;
-    IdMappedPOPPortTCP := nil;
-    IdMappedSMTPPortTCP := nil;
+    GIdMappedPOPPortTCP := nil;
+    GIdMappedSMTPPortTCP := nil;
     LError := False;
 
     try
 
-
       LParam := string(AnsiString(Param));
+      GMappedPorts := TObjectList<TIdMappedPortTCP>.Create(True); // frees objects
       if LParam <> '' then
         begin
-          GMappedPorts := TObjectList<TIdMappedPortTCP>.Create;
           SIPs   := SplitString(LParam, ':');
           if Length(SIPs)>1 then
             SPorts := SplitString(SIPs[1], ',');
@@ -99,8 +103,18 @@ begin
             end;
         end else
         begin
-          InitMappedPort(IdMappedSMTPPortTCP, '127.0.0.1', 25);
-          InitMappedPort(IdMappedPOPPortTCP, '127.0.0.1', 110);
+          InitMappedPort(GIdMappedSMTPPortTCP, '127.0.0.1', 25);
+          InitMappedPort(GIdMappedPOPPortTCP, '127.0.0.1', 110);
+
+          GMappedPorts.Add(GIdMappedSMTPPortTCP);
+          GMappedPorts.Add(GIdMappedPOPPortTCP);
+        end;
+
+      for LMappedPort in GMappedPorts do
+        begin
+          // procedure(AContext: TIdContext; AException: Exception) of object;
+//          var LOnException: TIdServerThreadExceptionEvent := nil;
+          LMappedPort.OnException := nil; // Handle exceptions
         end;
 
       if not LError then

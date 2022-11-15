@@ -1,5 +1,6 @@
 unit Mercury.Daemon;
-{$MESSAGE WARN 'Most/All int is translated as INT_16. This might not be correct, and if so, should be translated to INT_32'}
+{$MESSAGE WARN 'Most/All int is translated as INT_16. This might not be correct, '+
+ 'and if so, should be translated to INT_32'}
 {$MESSAGE WARN 'Returns of int can be translated to INT_32, since that return is into CPU registers.'}
 // chuacw
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
@@ -17,7 +18,8 @@ unit Mercury.Daemon;
 
 *)
 interface
-uses Winapi.Windows, Winapi.Messages;
+uses
+  Winapi.Windows, Winapi.Messages;
 //#ifndef _DAEMON_H_
 //#define _DAEMON_H_
 

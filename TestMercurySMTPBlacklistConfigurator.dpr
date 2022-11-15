@@ -54,6 +54,27 @@ begin
   try
     LDNSResolver.Host := '8.8.8.8';
     LDNSResolver.QueryType := [qtSTAR];
+    try
+      LDNSResolver.Resolve(LQuery);
+      Result := LDNSResolver.QueryResult.Count > 0;
+    except
+      Result := True; // Blacklist by default
+    end;
+  finally
+    LDNSResolver.Free;
+  end;
+end;
+
+function IsDomainBlacklisted(const ADomain: string): Boolean;
+var
+  LQuery: string;
+  LDNSResolver: TIdDNSResolver;
+begin
+  LQuery := Format('%s.dnsbl.sorbs.net', [ADomain]);
+  LDNSResolver := TIdDNSResolver.Create(nil);
+  try
+    LDNSResolver.Host := '8.8.8.8';
+    LDNSResolver.QueryType := [qtSTAR];
     LDNSResolver.Resolve(LQuery);
     Result := LDNSResolver.QueryResult.Count > 0;
   finally
@@ -62,5 +83,6 @@ begin
 end;
 
 begin
+  IsDomainBlacklisted('bret.lotiones.club');
   IsSORBSBlacklisted('200.38.231.80');
 end.

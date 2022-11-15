@@ -4,7 +4,8 @@ unit Mercury.SMTP.BlackListHandler;
 {$WEAKLINKRTTI ON}
 
 interface
-uses System.Generics.Collections;
+uses
+  System.Generics.Collections;
 
 type
   TBlacklist = class
@@ -21,7 +22,8 @@ type
   end;
 
 implementation
-uses System.SysUtils;
+uses
+  System.SysUtils;
 
 { TBlacklist }
 

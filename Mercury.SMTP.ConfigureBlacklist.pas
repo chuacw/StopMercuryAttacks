@@ -46,7 +46,7 @@ implementation
 
 procedure TfrmBlacklist.OnIdle(Sender: TObject; var Done: Boolean);
 begin
-  btnRemove.Enabled := (ListBox1.Items.Count>0) and (ListBox1.ItemIndex<>-1);
+  btnRemove.Enabled := (ListBox1.Items.Count > 0) and (ListBox1.ItemIndex <> -1);
   btnAdd.Enabled := edBlacklist.Text <> '';
   btnOk.Enabled := FDirty;
 end;
@@ -91,7 +91,7 @@ var
   I: Integer;
   LSelCount: Integer;
 begin
-  if (ListBox1.ItemIndex<>-1) and not (ListBox1.MultiSelect) then
+  if (ListBox1.ItemIndex <> -1) and not (ListBox1.MultiSelect) then
     begin
       ListBox1.Items.Delete(ListBox1.ItemIndex);
       FDirty := True;

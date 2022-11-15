@@ -5,7 +5,8 @@ unit Mercury.Helpers;
 {$WEAKLINKRTTI ON}
 
 interface
-uses Mercury.Daemon;
+uses
+  Mercury.Daemon;
 
 type
   TIPAddress = AnsiString;
@@ -14,27 +15,34 @@ var
   ModuleName: AnsiString = '';
   MercuryFuncPtrs: M_INTERFACE;
 
-///<summary>Logs the given message, LogMsg, to the System Messages window.
+/// <summary>Logs the given message, LogMsg, to the System Messages window.
 /// Controlled by Configuration -&gt; Mercury core module -&gt; Reporting -&gt; System message reporting level.
 /// This function scrolls the system message window to keep the latest message shown.
-///<param name="LogMsg">Msg to log</param>
-///</summary>
+/// <param name="LogMsg">Msg to log</param>
+/// </summary>
+procedure Log(const LogMsg: string); overload;
 procedure Log(const LogMsg: AnsiString); overload;
 
 procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString);
 
 implementation
-uses System.SysUtils, Winapi.Windows, Winapi.Messages;
+uses
+  System.SysUtils, Winapi.Windows, Winapi.Messages;
 
-///<param name="LDateTime">Date/Time</param>
-///<param name="IPAddress">IP address</param>
-///<summary>Logs the last connection from a given IP address.</summary>
-procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString);
+/// <param name="LDateTime">Date/Time</param>
+/// <param name="IPAddress">IP address</param>
+/// <summary>Logs the last connection from a given IP address.</summary>
+procedure ShowLastConnectedTime(const LDateTime, IPAddress: AnsiString); overload;
 var
   Text: string;
 begin
   Text := Format(AnsiString('%s last connection: %s.'), [IPAddress, LDateTime]);
   Log(Text);
+end;
+
+procedure ShowLastConnectedTime(const LDateTime, IPAddress: string); overload;
+begin
+  ShowLastConnectedTime(AnsiString(LDateTime), AnsiString(IPAddress));
 end;
 
 var
@@ -93,6 +101,8 @@ begin
       LSystemMessageConsole := 0;
   if LSystemMessageConsole = 0 then
     begin
+      if not Assigned(MercuryFuncPtrs.get_variable) then
+        Exit;
       LFrameWindow := MercuryFuncPtrs.get_variable(GV_FRAMEWINDOW);
       LMDIParent := 0; LSystemMessages := 0; LPOP3ServerWindow := 0;
       if LFrameWindow <> 0 then
@@ -119,6 +129,11 @@ begin
   LText := AnsiString(Format('%s: %s', [ModuleName, LogMsg]));
   MercuryFuncPtrs.LogString(19400, LOG_NORMAL, PAnsiChar(LText));
   ScrollMessageWindowToBottom;
+end;
+
+procedure Log(const LogMsg: string);
+begin
+  Log(AnsiString(LogMsg));
 end;
 
 initialization

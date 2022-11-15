@@ -14,10 +14,10 @@ uses
   System.Win.Firewall in '..\WindowsFirewall\System.Win.Firewall.pas',
   Mercury.Helpers in 'Mercury.Helpers.pas',
   Mercury.EventLog in 'Mercury.EventLog.pas',
-  SysUtils.GuardUtils in '..\Libraries\SysUtils.GuardUtils.pas',
-  Winapi.Windows,
   Mercury.SMTP.ConfigureBlacklist in 'Mercury.SMTP.ConfigureBlacklist.pas' {frmBlacklist},
-  Mercury.EnableMemoryLeak in 'Mercury.EnableMemoryLeak.pas';
+  Mercury.EnableMemoryLeak in 'Mercury.EnableMemoryLeak.pas',
+  SysUtils.GuardUtils in '..\Libraries\SysUtils\SysUtils.GuardUtils.pas',
+  Mercury.Helpers.IPAddressUtils in 'Mercury.Helpers.IPAddressUtils.pas';
 
 exports
   daemon,

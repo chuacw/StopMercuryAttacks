@@ -5,7 +5,8 @@ unit Mercury.EventLog;
 {$WEAKLINKRTTI ON}
 
 interface
-uses Winapi.Windows;
+uses
+  Winapi.Windows;
 
 const
   EVENTLOG_SUCCESS = Winapi.Windows.EVENTLOG_SUCCESS;
@@ -30,7 +31,8 @@ var
   EventLog: TEventLogger;
 
 implementation
-uses System.SysUtils;
+uses
+  System.SysUtils;
 
 type
   TFilenameVersion = class

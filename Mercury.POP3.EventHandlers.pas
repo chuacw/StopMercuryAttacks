@@ -4,7 +4,8 @@ unit Mercury.POP3.EventHandlers;
 {$WEAKLINKRTTI ON}
 
 interface
-uses Mercury.POP3.Events, Mercury.Daemon;
+uses
+  Mercury.POP3.Events, Mercury.Daemon;
 
 function startup(m: PMercuryFuncPtrs; var flags: UINT_32; Name,
   param: PAnsiChar): Smallint; cdecl; export;
@@ -13,7 +14,8 @@ function closedown(m: PMercuryFuncPtrs; code: UINT_32; name: PAnsiChar;
   param: PAnsiChar): Smallint; cdecl; export;
 
 implementation
-uses System.SysUtils, System.Generics.Collections, System.DateUtils,
+uses
+  System.SysUtils, System.Generics.Collections, System.DateUtils,
   System.AnsiStrings, Mercury.Helpers;
 
 const
@@ -97,12 +99,15 @@ begin
   Result := 0; // Continue to next handler...
   try
     PMSEvent := PMPEventBuf(EventData);
+    if not Assigned(PMSEvent) then
+      Exit;
     IPAddress := PMSEvent.client;
     Command := AnsiUpperCase(PMSEvent.inbuf);
     Log(Format('Checking connection %s for USER/PASS', [IPAddress]));
-    IsUserPass := (AnsiPos(AnsiString('USER'), Command)<>0) or
-      (AnsiPos(AnsiString('PASS'), Command)<>0);
-    if not IsUserPass then Exit;
+    IsUserPass := (AnsiPos(AnsiString('USER'), Command) <> 0) or
+      (AnsiPos(AnsiString('PASS'), Command) <> 0);
+    if not IsUserPass then
+      Exit;
     if LastUserPassCount.ContainsKey(IPAddress) then
       begin
         LastCount := LastUserPassCount[IPAddress];
@@ -139,6 +144,8 @@ var
 begin
   Result := 0; // Continue to next handler...
   PMSEvent := PMPEventBuf(EventData);
+  if not Assigned(PMSEvent) then
+    Exit;
   IPAddress := PMSEvent.client;
   if LastUserPassCount.ContainsKey(IPAddress) then
     begin
@@ -149,6 +156,8 @@ end;
 
 function RegisterPOP3EventHandler(Event: UINT_32; EProc: EVENTPROC; CustomData: Pointer): INT_32; inline;
 begin
+  if not Assigned(MercuryFuncPtrs.RegisterEventHandler) then
+    Exit(0);
   Result := MercuryFuncPtrs.RegisterEventHandler(MMI_MERCURYP, Event, EProc, CustomData);
 end;
 
@@ -160,7 +169,7 @@ begin
   MercuryFuncPtrs := m^; // Copy the structure, not the pointer, as the data at the pointer will be released
   ModuleName := name;
 
-  if RegisterPOP3EventHandler(MPEVT_CONNECT2, @POP3EventHandler, nil)=0 then
+  if RegisterPOP3EventHandler(MPEVT_CONNECT2, @POP3EventHandler, nil) = 0 then
     Text := 'Failed to register Connect Handler' else
     begin
       Text := Format('Connect Handler registered successfully, Min: %d', [MinConnectTime]);
@@ -168,7 +177,7 @@ begin
     end;
   Log(Text);
 
-  if RegisterPOP3EventHandler(MPEVT_COMMAND, @POP3CommandHandler, nil)=0 then
+  if RegisterPOP3EventHandler(MPEVT_COMMAND, @POP3CommandHandler, nil) = 0 then
     Text := 'Failed to register Command Handler' else
     begin
       Text := 'Command Handler registered successfully';
@@ -176,7 +185,7 @@ begin
     end;
   Log(Text);
 
-  if RegisterPOP3EventHandler(MPEVT_LOGIN, @POP3ResetUserPassCount, nil)=0 then
+  if RegisterPOP3EventHandler(MPEVT_LOGIN, @POP3ResetUserPassCount, nil) = 0 then
     Text := 'Failed to register ResetUserPass Handler' else
     begin
       Text := 'ResetUserPass Handler registered successfully';
